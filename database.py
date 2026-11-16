@@ -1,4 +1,8 @@
-"""Office registry storage. SQLite on this PC, PostgreSQL when DATABASE_URL is set."""
+"""Office registry storage.
+
+PostgreSQL is the required centralized database (DATABASE_URL).
+SQLite remains a local-only fallback when ALLOW_SQLITE=1 and DATABASE_URL is unset.
+"""
 
 import os
 import re
@@ -105,12 +109,34 @@ STAFF_ROLES = ("Administrator", "Barangay Staff", "Health Worker")
 STAFF_STATUSES = ("Active", "Disabled")
 
 
+def require_postgres():
+    """True when the deployment must use PostgreSQL (Render / production)."""
+    if os.environ.get("RENDER") == "true":
+        return True
+    if os.environ.get("REQUIRE_POSTGRES", "").strip().lower() in ("1", "true", "yes"):
+        return True
+    return False
+
+
 def using_postgres():
     return bool(os.environ.get("DATABASE_URL", "").strip())
 
 
 def engine_name():
     return "postgres" if using_postgres() else "sqlite"
+
+
+def assert_database_engine():
+    """Enforce PostgreSQL on Render/production; SQLite only for local offline trials."""
+    if using_postgres():
+        return "postgres"
+    if require_postgres():
+        raise RuntimeError(
+            "PostgreSQL is required. Set DATABASE_URL to a PostgreSQL connection string."
+        )
+    # Local machines without DATABASE_URL may use SQLite for offline work only.
+    # Deployed / instructor evaluation environments must use PostgreSQL.
+    return "sqlite"
 
 
 def _now():
@@ -163,6 +189,7 @@ class _Conn:
 
 @contextmanager
 def connect():
+    assert_database_engine()
     postgres = using_postgres()
     if postgres:
         import psycopg
@@ -362,6 +389,9 @@ def init_db():
         _ensure_senior_columns(conn)
         import db_enhance
         db_enhance.apply_schema_enhancements(conn)
+        if conn.postgres:
+            import pg_migrate
+            pg_migrate.apply_pending_migrations(conn)
         db_enhance.seed_default_documents_if_empty(conn)
         db_enhance.auto_open_followups(conn)
 

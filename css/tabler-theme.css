@@ -1,0 +1,130 @@
+/* BSCIAMS Tabler government theme
+   Primary: Deep navy #183153 | Secondary: #426B91 | Background: #F5F7FA
+   Built on official Tabler admin components: https://tabler.io/
+*/
+
+:root,
+[data-bs-theme="light"],
+html {
+  --tblr-primary: #183153;
+  --tblr-primary-rgb: 24, 49, 83;
+  --tblr-secondary: #426b91;
+  --tblr-secondary-rgb: 66, 107, 145;
+  --tblr-body-bg: #f5f7fa;
+  --tblr-body-color: #1f2a37;
+  --tblr-border-color: #e6ebf1;
+  --tblr-font-sans-serif: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Map existing BSCIAMS tokens onto the Tabler navy system */
+  --brand: #183153;
+  --brand-2: #426b91;
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --text: #1f2a37;
+  --text-muted: #5b6b7c;
+  --border: #e6ebf1;
+  --status-approved: #2f9e74;
+  --status-pending: #c9852d;
+  --status-alert: #c4473a;
+  --status-info: #3b82a8;
+  --chart-1: #183153;
+  --chart-2: #426b91;
+  --chart-3: #2f9e74;
+  --chart-4: #c9852d;
+  --chart-5: #3b82a8;
+  --chart-6: #6b7c8f;
+  --chart-7: #8aa0b5;
+}
+
+body {
+  background: var(--tblr-body-bg) !important;
+  font-family: var(--tblr-font-sans-serif);
+}
+
+/* Dark navy sidebar (Tabler + existing .sidebar shell) */
+.sidebar,
+.navbar-vertical,
+.navbar-dark {
+  background: #183153 !important;
+  color: #e8eef5;
+}
+
+.sidebar .nav-link,
+.sidebar a,
+.navbar-vertical .nav-link {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.sidebar .nav-link.is-active,
+.sidebar .nav-link:hover,
+.navbar-vertical .nav-link.active,
+.navbar-vertical .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.brand__mark,
+.sidebar .brand__mark {
+  background: #426b91;
+}
+
+.btn--primary,
+.btn-primary {
+  background: #183153 !important;
+  border-color: #183153 !important;
+}
+
+.btn--primary:hover,
+.btn-primary:hover {
+  background: #426b91 !important;
+  border-color: #426b91 !important;
+}
+
+.card,
+.page-header,
+.table {
+  border-color: var(--border);
+}
+
+.table {
+  font-size: 0.92rem;
+}
+
+.badge--approved,
+.bg-success-lt {
+  background: rgba(47, 158, 116, 0.14) !important;
+  color: #1f6b4d !important;
+}
+
+.badge--pending,
+.bg-warning-lt {
+  background: rgba(201, 133, 45, 0.16) !important;
+  color: #8a5a14 !important;
+}
+
+.badge--alert,
+.bg-danger-lt {
+  background: rgba(196, 71, 58, 0.14) !important;
+  color: #8f2f26 !important;
+}
+
+.badge--info,
+.bg-info-lt {
+  background: rgba(59, 130, 168, 0.14) !important;
+  color: #245977 !important;
+}
+
+.page-title,
+.card__title {
+  color: #183153;
+}
+
+.content {
+  background: transparent;
+}
+
+@media (max-width: 960px) {
+  .sidebar {
+    box-shadow: 0 8px 24px rgba(24, 49, 83, 0.25);
+  }
+}

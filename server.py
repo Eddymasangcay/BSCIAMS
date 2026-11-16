@@ -1,7 +1,7 @@
 """BSCIAMS web server.
 
 Serves role workspaces, enforces backend permissions, and stores office records
-in SQLite (local) or PostgreSQL (DATABASE_URL).
+in PostgreSQL (required centralized database via DATABASE_URL).
 """
 
 import os
@@ -464,12 +464,135 @@ def public_activity():
     return jsonify(ok=True)
 
 
+@app.get("/api/db/status")
+def db_status():
+    blocked = _require_login()
+    if blocked:
+        return blocked
+    info = {
+        "ok": True,
+        "engine": database.engine_name(),
+        "postgresRequired": database.require_postgres() or database.using_postgres(),
+        "usingPostgres": database.using_postgres(),
+    }
+    if database.using_postgres():
+        import pg_migrate
+        with database.connect() as conn:
+            info["migrations"] = pg_migrate.migration_status(conn)
+            row = conn.execute("SELECT current_database() AS db, current_user AS usr").fetchone()
+            info["database"] = row["db"]
+            info["dbUser"] = row["usr"]
+    return jsonify(info)
+
+
+@app.post("/api/db/backup")
+def db_backup_create():
+    blocked = _require_permission("backup.create")
+    if blocked:
+        return blocked
+    if not database.using_postgres():
+        return jsonify(ok=False, errors={"form": "PostgreSQL backups require DATABASE_URL."}), 400
+    import pg_backup
+    account = _current_account()
+    try:
+        entry = pg_backup.create_postgres_backup(created_by=account["name"])
+    except pg_backup.BackupError as exc:
+        database.append_activity(
+            {
+                "action": "Backup",
+                "module": "Database Backup",
+                "details": f"PostgreSQL backup failed: {exc}",
+                "user": account["name"],
+                "role": account["role"],
+                "severity": "Critical",
+            },
+            ip=request.remote_addr,
+        )
+        return jsonify(ok=False, errors={"form": str(exc)}), 500
+    database.append_activity(
+        {
+            "action": "Backup",
+            "module": "Database Backup",
+            "details": f"PostgreSQL backup created ({entry.get('fileName')}, {entry.get('method')})",
+            "user": account["name"],
+            "role": account["role"],
+            "severity": "Info",
+        },
+        ip=request.remote_addr,
+    )
+    return jsonify(ok=True, backup=entry)
+
+
+@app.get("/api/db/backups")
+def db_backup_list():
+    blocked = _require_permission("backup.create", "backup.restore")
+    if blocked:
+        return blocked
+    import pg_backup
+    return jsonify(ok=True, files=pg_backup.list_backup_files(), history=database.dump_store().get("backups") or [])
+
+
+@app.post("/api/db/backups/validate")
+def db_backup_validate():
+    blocked = _require_permission("backup.create", "backup.restore")
+    if blocked:
+        return blocked
+    data = request.get_json(silent=True) or {}
+    import pg_backup
+    result = pg_backup.validate_backup_file(data.get("fileName") or "")
+    status = 200 if result.get("ok") else 400
+    return jsonify(result), status
+
+
+@app.post("/api/db/restore")
+def db_backup_restore():
+    blocked = _require_permission("backup.restore")
+    if blocked:
+        return blocked
+    data = request.get_json(silent=True) or {}
+    if not data.get("confirm"):
+        return jsonify(ok=False, errors={"form": "Confirmation is required before restore."}), 400
+    import pg_backup
+    account = _current_account()
+    try:
+        entry = pg_backup.restore_postgres_backup(
+            data.get("fileName") or "",
+            created_by=account["name"],
+            confirm=True,
+        )
+    except pg_backup.BackupError as exc:
+        database.append_activity(
+            {
+                "action": "Restore",
+                "module": "Database Backup",
+                "details": f"PostgreSQL restore failed: {exc}",
+                "user": account["name"],
+                "role": account["role"],
+                "severity": "Critical",
+            },
+            ip=request.remote_addr,
+        )
+        return jsonify(ok=False, errors={"form": str(exc)}), 500
+    database.append_activity(
+        {
+            "action": "Restore",
+            "module": "Database Backup",
+            "details": f"PostgreSQL restored from {entry.get('fileName')}",
+            "user": account["name"],
+            "role": account["role"],
+            "severity": "Critical",
+        },
+        ip=request.remote_addr,
+    )
+    return jsonify(ok=True, backup=entry)
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "5000"))
     host = "0.0.0.0" if os.environ.get("PORT") else "127.0.0.1"
     print(f"BSCIAMS is running at http://{host}:{port}")
     if database.using_postgres():
-        print("Database: PostgreSQL (DATABASE_URL)")
+        print("Database: PostgreSQL (DATABASE_URL) [required primary engine]")
     else:
-        print(f"SQLite file: {database.DB_PATH}")
+        print(f"Database: SQLite fallback ({database.DB_PATH}) — set DATABASE_URL for PostgreSQL")
     app.run(host=host, port=port, debug=False)

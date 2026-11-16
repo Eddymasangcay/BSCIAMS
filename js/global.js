@@ -140,7 +140,7 @@
 
   const THEMES = ['light', 'dark', 'high-contrast'];
   const THEME_META = {
-    light: { label: 'Light theme', next: 'Switch to dark theme', icon: 'fa-sun', color: '#3D007A' },
+    light: { label: 'Light theme', next: 'Switch to dark theme', icon: 'fa-sun', color: '#183153' },
     dark: { label: 'Dark theme', next: 'Switch to high contrast', icon: 'fa-moon', color: '#141018' },
     'high-contrast': { label: 'High contrast', next: 'Switch to light theme', icon: 'fa-circle-half-stroke', color: '#2A0057' }
   };
@@ -3466,21 +3466,40 @@
         </tr>`).join('') || emptyRow(6, 'No backups yet', 'Create a backup to see it here.', 'fa-database');
     }
 
-    /* Create backup */
+    /* Create backup — PostgreSQL server backup when available, plus JSON export */
     $('#createBackupBtn').addEventListener('click', async (e) => {
       const btn = e.currentTarget;
       if (btn.disabled) return;
       btn.disabled = true;
-      await runProgress($('#backupProgress'), ['Collecting senior records…', 'Packaging assistance history…', 'Bundling audit logs…', 'Finalizing backup file…']);
+      await runProgress($('#backupProgress'), ['Preparing PostgreSQL backup…', 'Collecting senior records…', 'Packaging assistance history…', 'Finalizing backup file…']);
+      const postgres = DB.load().engine === 'postgres';
+      if (postgres && can('backup.create')) {
+        try {
+          const res = await fetch('/api/db/backup', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+            body: '{}'
+          });
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(body.errors?.form || 'PostgreSQL backup failed.');
+          if (body.backup) DB.load().backups.unshift(body.backup);
+          toast(`PostgreSQL backup saved as ${body.backup?.fileName || 'dump'} (${body.backup?.method || 'pg'}).`, 'success', 'Postgres backup');
+        } catch (err) {
+          toast(err.message || 'PostgreSQL backup failed; creating JSON export instead.', 'warning');
+        }
+      }
       const payload = DB.exportData();
       const json = JSON.stringify(payload, null, 2);
       const filename = `bscims-backup-${fileStamp()}.json`;
       downloadBlob(json, filename, 'application/json');
-      DB.load().backups.unshift({ id: uid('BK'), ts: new Date().toISOString(), type: 'Manual', size: new Blob([json]).size, by: session.name, records: recordCount() });
+      if (!postgres) {
+        DB.load().backups.unshift({ id: uid('BK'), ts: new Date().toISOString(), type: 'Manual', size: new Blob([json]).size, by: session.name, records: recordCount() });
+      }
       DB.log('Backup', 'Database Backup', `Manual backup created (${filename}, ${fmtBytes(new Blob([json]).size)})`);
       toast(`${filename} was downloaded. Store it somewhere safe.`, 'success', 'Backup complete');
       $('#backupProgress .progress__label').textContent = 'Backup completed successfully';
       btn.disabled = false;
+      await DB.save().catch(() => {});
       renderOverview(); renderHistory();
       setTimeout(() => { $('#backupProgress').hidden = true; }, 2500);
     });

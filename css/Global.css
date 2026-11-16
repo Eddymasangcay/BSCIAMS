@@ -10,23 +10,23 @@
    -------------------------------------------------------------------------- */
 :root {
   color-scheme: light;
-  /* Brand Colors */
-  --primary-toxic-violet: #3D007A;
-  --primary-hover: #2E005C;
-  --bg-soft-chrome: #EFECF1;
+  /* Brand Colors — Tabler government theme (deep navy) */
+  --primary-toxic-violet: #183153;
+  --primary-hover: #12263f;
+  --bg-soft-chrome: #F5F7FA;
   --surface-white: #FFFFFF;
-  --text-dark: #1E1A24;
-  --text-muted: #6B6575;
-  --border-light: #DDD8E3;
+  --text-dark: #1F2A37;
+  --text-muted: #5B6B7C;
+  --border-light: #E6EBF1;
 
   /* Status Accent Colors */
-  --status-approved: #10B981;  /* Soft Green */
-  --status-pending: #F59E0B;   /* Soft Amber */
-  --status-alert: #EF4444;     /* Soft Red */
+  --status-approved: #2F9E74;  /* Muted green */
+  --status-pending: #C9852D;   /* Amber */
+  --status-alert: #C4473A;     /* Red */
 
   /* UI Token Variables & Minimal Transitions */
   --radius-card: 12px;
-  --shadow-subtle: 0 4px 20px rgba(61, 0, 122, 0.06);
+  --shadow-subtle: 0 4px 20px rgba(24, 49, 83, 0.06);
   --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -34,10 +34,10 @@
   --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 
-  --primary-soft: #F4EEFA;
-  --primary-soft-2: #E7DBF4;
-  --primary-ring: rgba(61, 0, 122, 0.16);
-  --surface-muted: #F8F6FA;
+  --primary-soft: #E8EEF5;
+  --primary-soft-2: #D5E0EC;
+  --primary-ring: rgba(24, 49, 83, 0.16);
+  --surface-muted: #F5F7FA;
 
   --status-approved-soft: #E7F8F1;
   --status-approved-text: #047857;
@@ -49,20 +49,20 @@
   --status-info-soft: #EBF2FE;
   --status-info-text: #1D4ED8;
 
-  --chart-1: #3D007A;
-  --chart-2: #7A3DC0;
-  --chart-3: #B592E0;
-  --chart-4: #10B981;
-  --chart-5: #F59E0B;
-  --chart-6: #EF4444;
-  --chart-7: #C9C2D2;
+  --chart-1: #183153;
+  --chart-2: #426B91;
+  --chart-3: #2F9E74;
+  --chart-4: #C9852D;
+  --chart-5: #3B82A8;
+  --chart-6: #C4473A;
+  --chart-7: #8AA0B5;
 
   --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-pill: 999px;
 
-  --shadow-hover: 0 10px 28px rgba(61, 0, 122, 0.10);
+  --shadow-hover: 0 10px 28px rgba(24, 49, 83, 0.10);
   --shadow-pop: 0 12px 32px rgba(30, 26, 36, 0.12);
   --shadow-modal: 0 24px 64px rgba(30, 26, 36, 0.20);
 
@@ -1620,7 +1620,7 @@ legend.form-section__title { float: left; width: 100%; }
     --text-muted: #6B6575;
     --bg-soft-chrome: #fff;
     --border-light: #DDD8E3;
-    --primary-toxic-violet: #3D007A;
+    --primary-toxic-violet: #183153;
     --surface-muted: #F8F6FA;
   }
   body { background: #fff; color: #1E1A24; font-size: 12px; }
