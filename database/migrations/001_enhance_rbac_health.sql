@@ -1,5 +1,6 @@
--- Non-destructive enhancement migration (SQLite).
--- Applied by database.apply_migrations(); safe to re-run via IF NOT EXISTS / column checks.
+-- Non-destructive enhancement migration (SQLite ONLY).
+-- Applied by db_enhance for local SQLite. Do NOT run on PostgreSQL
+-- (pg_migrate only loads *_postgres.sql files).
 
 CREATE TABLE IF NOT EXISTS RolePermissions (
   RolePermissionId INTEGER PRIMARY KEY AUTOINCREMENT,

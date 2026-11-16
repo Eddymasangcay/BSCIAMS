@@ -18,10 +18,16 @@ def _checksum(text: str) -> str:
 
 
 def list_migration_files():
+    """Only PostgreSQL migration scripts (*_postgres.sql).
+
+    SQLite-oriented files such as 001_enhance_rbac_health.sql are applied by
+    db_enhance for local SQLite and must never run against Postgres.
+    """
     if not MIGRATIONS_DIR.is_dir():
         return []
     return sorted(
-        p for p in MIGRATIONS_DIR.glob("*.sql") if p.is_file() and not p.name.startswith("_")
+        p for p in MIGRATIONS_DIR.glob("*_postgres.sql")
+        if p.is_file() and not p.name.startswith("_")
     )
 
 
