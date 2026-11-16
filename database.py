@@ -47,7 +47,9 @@ LEGACY_TABLES = (
     "staff_accounts",
 )
 
-_IDENTIFIERS = tuple(sorted((
+# Deduplicated: duplicate names (e.g. table + column FollowUpActions) must appear once,
+# otherwise Postgres adaptation quotes them twice (""Name"").
+_IDENTIFIERS = tuple(sorted({
     "StaffAccounts", "AccountId", "Username", "PasswordHash", "FullName", "AccountStatus",
     "RolePermissions", "RolePermissionId", "RoleName", "PermissionCode",
     "SeniorCitizens", "RecordId", "OscaId", "FirstName", "MiddleName", "LastName",
@@ -72,7 +74,7 @@ _IDENTIFIERS = tuple(sorted((
     "VitalSigns", "VitalId", "MeasuredAt", "MeasuredBy", "Systolic", "Diastolic",
     "PulseRate", "TemperatureC", "WeightKg", "BloodSugar", "OxygenSat",
     "HomeVisits", "VisitId", "ScheduledAt", "CompletedAt", "VisitStatus",
-    "Observations", "FollowUpActions",
+    "Observations",
     "MedicalReferrals", "ReferralId", "ReferredAt", "ReferredBy", "Destination",
     "ReferralStatus", "FollowUpNotes",
     "ActivityLog", "LogId", "ActorName", "ActorRole", "ActionType", "ModuleName", "IpAddress",
@@ -82,7 +84,7 @@ _IDENTIFIERS = tuple(sorted((
     "SeededAt", "ImportedFromBrowser",
     "Role", "Sex", "Purok", "Venue", "Title", "Description", "Amount",
     "Purpose", "Remarks", "Notes", "Details", "Severity",
-), key=len, reverse=True))
+}, key=len, reverse=True))
 
 _WRITE_LOCK = threading.Lock()
 
@@ -129,7 +131,12 @@ def _adapt_sql(statement, postgres):
         return statement
     statement = statement.replace(" COLLATE NOCASE", "")
     for name in _IDENTIFIERS:
-        statement = re.sub(rf"\b{re.escape(name)}\b", f'"{name}"', statement)
+        # Skip names that are already quoted so we never produce ""Name"".
+        statement = re.sub(
+            rf'(?<!")\b{re.escape(name)}\b(?!")',
+            f'"{name}"',
+            statement,
+        )
     return statement.replace("?", "%s")
 
 
