@@ -63,7 +63,7 @@ html, body {
   background: #fff;
   border: 0.3mm solid #3D007A;
   border-radius: 2.4mm;
-  box-shadow: 0 10px 28px rgba(61, 0, 122, 0.16);
+  box-shadow: 0 10px 28px rgba(36, 71, 107, 0.16);
   font-size: 7.2pt;
   line-height: 1.25;
   -webkit-print-color-adjust: exact;
@@ -86,7 +86,7 @@ html, body {
   height: 8mm;
   border: 0.35mm solid rgba(255,255,255,0.85);
   border-radius: 50%;
-  background: #2E005C;
+  background: #24476B;
   font-size: 4.2mm;
 }
 .id-card__kicker {

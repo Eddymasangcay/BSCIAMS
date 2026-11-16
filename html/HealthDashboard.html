@@ -3,64 +3,191 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#183153">
+  <meta name="theme-color" content="#24476B">
   <script>try{var __t=localStorage.getItem('bscims_theme');if(__t)document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
   <title>Health Dashboard | BSCIAMS</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler.min.css">
   <link rel="stylesheet" href="/css/tabler-theme.css">
   <link rel="stylesheet" href="/css/Global.css">
+  <link rel="stylesheet" href="/css/Dashboard.css">
   <link rel="stylesheet" href="/css/WorkspaceModules.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/js/tabler.min.js" defer></script>
   <script src="/js/workspace-modules.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/js/tabler.min.js" defer></script>
   <script src="/js/global.js" defer></script>
+  <script src="/js/dashboard-charts.js" defer></script>
 </head>
 <body data-page="health-dashboard">
   <a class="skip-link" href="#main">Skip to main content</a>
+
   <div class="app">
     <aside class="sidebar" id="sidebar" aria-label="Sidebar"></aside>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <div class="main">
       <header class="topbar" id="topbar"></header>
+
       <main class="content" id="main" tabindex="-1">
         <div class="page-header">
           <div>
-            <h1 class="page-title">Health Dashboard</h1>
-            <p class="page-subtitle">Overview of health profiles, assessments, vital signs, home visits, and referrals.</p>
+            <span class="role-chip role-chip--health"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i> Health services</span>
+            <p class="eyebrow" id="todayDate"></p>
+            <h1 class="page-title" id="greeting">Health Dashboard</h1>
+            <p class="page-subtitle">Monitor senior health profiles, assessments, vital signs, home visits, and medical referrals. Documentation only — no diagnosis or prescribing.</p>
           </div>
-          <div class="page-actions" id="pageActions"></div>
+          <div class="page-actions">
+            <a class="btn btn--secondary" href="/HealthReports" data-perm="report.view" data-perm-hide><i class="fa-solid fa-file-medical" aria-hidden="true"></i>Health reports</a>
+            <a class="btn btn--primary" href="/HealthAssessments" data-perm="health.assessment" data-perm-hide><i class="fa-solid fa-file-waveform" aria-hidden="true"></i>Record assessment</a>
+          </div>
         </div>
-        <section class="grid grid--4 mb-4" id="summaryStats" aria-label="Summary"></section>
-        <section class="card">
-          <header class="card__header">
-            <div>
-              <h2 class="card__title" id="listHeading">Records</h2>
-              <p class="card__subtitle" id="listSubtitle">Manage workspace records</p>
+
+        <p class="ws-note health-disclaimer" id="healthDisclaimer">Health modules are for barangay documentation and follow-up coordination. Clinical diagnosis and prescriptions are outside the scope of this system.</p>
+
+        <section class="stat-grid" aria-label="Health summary">
+          <a class="stat-card" href="/HealthProfiles">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Health profiles</span>
+              <span class="stat-card__icon tone-info"><i class="fa-solid fa-notes-medical" aria-hidden="true"></i></span>
             </div>
-            <div class="assist-filters">
-              <div class="input-icon">
-                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                <label for="moduleSearch" class="sr-only">Search</label>
-                <input class="input input--sm" type="search" id="moduleSearch" placeholder="Search…">
-              </div>
-              <label for="moduleFilter" class="sr-only">Filter</label>
-              <select class="select select--sm" id="moduleFilter"><option value="">All</option></select>
+            <strong class="stat-card__value" id="statProfiles">—</strong>
+            <p class="stat-card__meta" id="statProfilesMeta"></p>
+          </a>
+          <a class="stat-card" href="/HealthAssessments">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Assessments</span>
+              <span class="stat-card__icon tone-approved"><i class="fa-solid fa-file-waveform" aria-hidden="true"></i></span>
             </div>
-          </header>
-          <div class="table-wrap">
-            <table class="table" id="moduleTable">
-              <thead id="moduleHead"></thead>
-              <tbody id="moduleBody"></tbody>
-            </table>
-          </div>
+            <strong class="stat-card__value" id="statAssessments">—</strong>
+            <p class="stat-card__meta" id="statAssessmentsMeta"></p>
+          </a>
+          <a class="stat-card" href="/VitalSigns">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Vital signs recorded</span>
+              <span class="stat-card__icon tone-pending"><i class="fa-solid fa-heart" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statVitals">—</strong>
+            <p class="stat-card__meta" id="statVitalsMeta"></p>
+          </a>
+          <a class="stat-card" href="/MedicalReferrals">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Open referrals</span>
+              <span class="stat-card__icon tone-alert"><i class="fa-solid fa-hospital" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statReferrals">—</strong>
+            <p class="stat-card__meta" id="statReferralsMeta"></p>
+          </a>
         </section>
-        <div id="moduleModals"></div>
+
+        <section class="stat-grid stat-grid--3" aria-label="Visits and programs">
+          <a class="stat-card" href="/HomeVisits">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Upcoming home visits</span>
+              <span class="stat-card__icon tone-info"><i class="fa-solid fa-house-chimney-medical" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statVisits">—</strong>
+            <p class="stat-card__meta" id="statVisitsMeta"></p>
+          </a>
+          <a class="stat-card" href="/HomeVisits">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Follow-up visits</span>
+              <span class="stat-card__icon tone-pending"><i class="fa-solid fa-user-clock" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statVisitFollowups">—</strong>
+            <p class="stat-card__meta" id="statVisitFollowupsMeta"></p>
+          </a>
+          <a class="stat-card" href="/HealthPrograms">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Health programs</span>
+              <span class="stat-card__icon tone-approved"><i class="fa-solid fa-calendar-plus" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statHealthPrograms">—</strong>
+            <p class="stat-card__meta" id="statHealthProgramsMeta"></p>
+          </a>
+        </section>
+
+        <section class="dash-grid" aria-label="Health analytics">
+          <article class="card dash-grid__wide">
+            <header class="card__header card__header--plain">
+              <div>
+                <h2 class="card__title">Health activity trend</h2>
+                <p class="card__subtitle">Assessments and vital readings over the last 6 months</p>
+              </div>
+            </header>
+            <div class="card__body">
+              <div class="chart-box">
+                <canvas id="healthActivityChart" role="img" aria-label="Line chart of health assessments and vitals"></canvas>
+              </div>
+            </div>
+          </article>
+
+          <article class="card dash-list-card">
+            <header class="card__header">
+              <div>
+                <h2 class="card__title">Needs attention</h2>
+                <p class="card__subtitle">Referrals and visits to follow</p>
+              </div>
+            </header>
+            <ul class="attention-list" id="healthAttention" style="padding:8px 12px 12px"></ul>
+          </article>
+
+          <article class="card dash-list-card dash-grid__wide">
+            <header class="card__header">
+              <div>
+                <h2 class="card__title">Recent health records</h2>
+                <p class="card__subtitle">Latest assessments, vitals, visits, and referrals</p>
+              </div>
+              <a class="link small" href="/HealthProfiles">Profiles</a>
+            </header>
+            <div class="table-wrap">
+              <table class="dash-table" id="healthRecentTable">
+                <thead>
+                  <tr><th>When</th><th>Type</th><th>Senior</th><th>Summary</th></tr>
+                </thead>
+                <tbody id="healthRecentBody"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="card dash-list-card">
+            <header class="card__header">
+              <div>
+                <h2 class="card__title">Upcoming home visits</h2>
+                <p class="card__subtitle">Scheduled next</p>
+              </div>
+              <a class="link small" href="/HomeVisits">Manage</a>
+            </header>
+            <ul class="event-list" id="upcomingVisits"></ul>
+          </article>
+
+          <article class="card dash-grid__full">
+            <header class="card__header card__header--plain">
+              <div>
+                <h2 class="card__title">Quick actions</h2>
+                <p class="card__subtitle">Health documentation shortcuts</p>
+              </div>
+            </header>
+            <div class="card__body">
+              <div class="quick-actions">
+                <a class="quick-action" href="/HealthProfiles"><span class="quick-action__icon"><i class="fa-solid fa-notes-medical" aria-hidden="true"></i></span><span class="quick-action__label">View health profiles</span></a>
+                <a class="quick-action" href="/HealthAssessments" data-perm="health.assessment" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-file-waveform" aria-hidden="true"></i></span><span class="quick-action__label">Record health assessment</span></a>
+                <a class="quick-action" href="/VitalSigns" data-perm="health.vitals" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-heart" aria-hidden="true"></i></span><span class="quick-action__label">Record vital signs</span></a>
+                <a class="quick-action" href="/HomeVisits" data-perm="health.home_visit" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-house-chimney-medical" aria-hidden="true"></i></span><span class="quick-action__label">Schedule home visit</span></a>
+                <a class="quick-action" href="/MedicalReferrals" data-perm="health.referral" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-hospital" aria-hidden="true"></i></span><span class="quick-action__label">Manage referrals</span></a>
+                <a class="quick-action" href="/HealthPrograms"><span class="quick-action__icon"><i class="fa-solid fa-calendar-plus" aria-hidden="true"></i></span><span class="quick-action__label">View health programs</span></a>
+                <a class="quick-action" href="/HealthPrograms"><span class="quick-action__icon"><i class="fa-solid fa-clipboard-user" aria-hidden="true"></i></span><span class="quick-action__label">Program attendance</span></a>
+                <a class="quick-action" href="/HealthReports" data-perm="report.view" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-file-medical" aria-hidden="true"></i></span><span class="quick-action__label">Generate health reports</span></a>
+              </div>
+            </div>
+          </article>
+        </section>
       </main>
     </div>
   </div>
 </body>
 </html>
-

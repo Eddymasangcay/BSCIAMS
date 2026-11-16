@@ -1,6 +1,6 @@
 # BSCIAMS Permissions
 
-Backend enforcement uses `permissions.py` and the `RolePermissions` table.
+Backend enforcement uses `project_resources/permissions.py` and the `RolePermissions` table.
 
 ## Codes
 

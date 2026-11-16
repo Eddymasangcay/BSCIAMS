@@ -10,7 +10,8 @@ import hashlib
 import os
 from pathlib import Path
 
-MIGRATIONS_DIR = Path(__file__).resolve().parent / "database" / "migrations"
+# SQL migrations remain under <repo>/database/migrations/
+MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "database" / "migrations"
 
 
 def _checksum(text: str) -> str:

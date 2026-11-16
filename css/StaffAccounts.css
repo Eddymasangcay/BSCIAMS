@@ -2,10 +2,6 @@
    StaffAccounts.css: office login administration
    ========================================================================== */
 
-.content .page-header { align-items: flex-start; }
-.content .page-header > div:first-child { flex: 1 1 16rem; min-width: 0; }
-.content .page-actions { flex: 0 0 auto; margin-left: auto; }
-
 .staff-filters .field:not(.field--grow) { flex: 0 1 160px; }
 
 #staffBody .cell-person__text strong {
@@ -35,6 +31,14 @@
   color: var(--text-muted);
   background: var(--surface-muted);
   cursor: default;
+}
+
+#staffContent .grid--4 {
+  margin-bottom: 12px;
+}
+
+#staffContent > .card {
+  margin-top: 0;
 }
 
 @media (max-width: 767px) {

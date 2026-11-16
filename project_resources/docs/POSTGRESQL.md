@@ -9,11 +9,11 @@ BSCIAMS uses **PostgreSQL** as the centralized relational database for all three
 | DBMS | PostgreSQL |
 | Python driver | `psycopg` (v3, binary) |
 | Connection | `DATABASE_URL` environment variable |
-| SSL | `sslmode=require` appended when missing (Render-compatible) |
+| SSL | On Render (`RENDER=true`), `sslmode=require` is appended when missing. For local Postgres, set `sslmode` in `DATABASE_URL` if needed (e.g. `sslmode=disable`). |
 | Schema files | `database/schema.postgres.sql` |
-| Migrations | `database/migrations/*.sql` via `pg_migrate.py` |
+| Migrations | `database/migrations/*.sql` via `project_resources/pg_migrate.py` |
 
-Developed/tested against PostgreSQL 14+ (Render managed Postgres). Local SQLite is only an offline trial fallback when `DATABASE_URL` is unset and the app is **not** running on Render.
+Developed/tested against PostgreSQL 14+ (Render managed Postgres). Local SQLite is only an offline trial fallback when `DATABASE_URL` is unset, `ALLOW_SQLITE=1` is set, and the app is **not** running on Render.
 
 ## Required environment
 

@@ -14,8 +14,11 @@ from datetime import datetime, timezone
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DB_DIR = os.path.join(BASE_DIR, "database")
+# Modules live in project_resources/; data schemas stay at the repository root.
+RESOURCES_DIR = os.path.abspath(os.path.dirname(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(RESOURCES_DIR, ".."))
+BASE_DIR = ROOT_DIR
+DB_DIR = os.path.join(ROOT_DIR, "database")
 DB_PATH = os.path.join(DB_DIR, "bscims.db")
 SCHEMA_PATH = os.path.join(DB_DIR, "schema.sql")
 POSTGRES_SCHEMA_PATH = os.path.join(DB_DIR, "schema.postgres.sql")
@@ -118,6 +121,11 @@ def require_postgres():
     return False
 
 
+def allow_sqlite():
+    """Local offline trials only — never a parallel production database."""
+    return os.environ.get("ALLOW_SQLITE", "").strip().lower() in ("1", "true", "yes")
+
+
 def using_postgres():
     return bool(os.environ.get("DATABASE_URL", "").strip())
 
@@ -127,15 +135,18 @@ def engine_name():
 
 
 def assert_database_engine():
-    """Enforce PostgreSQL on Render/production; SQLite only for local offline trials."""
+    """Enforce PostgreSQL on Render/production; SQLite only when ALLOW_SQLITE=1."""
     if using_postgres():
         return "postgres"
     if require_postgres():
         raise RuntimeError(
             "PostgreSQL is required. Set DATABASE_URL to a PostgreSQL connection string."
         )
-    # Local machines without DATABASE_URL may use SQLite for offline work only.
-    # Deployed / instructor evaluation environments must use PostgreSQL.
+    if not allow_sqlite():
+        raise RuntimeError(
+            "DATABASE_URL is not set. Configure PostgreSQL via DATABASE_URL, "
+            "or set ALLOW_SQLITE=1 for local offline trials only."
+        )
     return "sqlite"
 
 
@@ -147,7 +158,9 @@ def _postgres_dsn():
     url = os.environ.get("DATABASE_URL", "").strip()
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://"):]
-    if url and "sslmode=" not in url.lower():
+    # Render (and most hosted Postgres) require SSL. Local installs usually do not —
+    # set sslmode explicitly in DATABASE_URL when you need a non-default mode.
+    if url and "sslmode=" not in url.lower() and os.environ.get("RENDER") == "true":
         url += ("&" if "?" in url else "?") + "sslmode=require"
     return url
 

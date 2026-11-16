@@ -1,25 +1,28 @@
-/* Shared styles for experimental role-workspace modules */
+/* Shared styles for role-workspace modules */
 
 .ws-note {
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
-  border-left: 4px solid var(--brand, #3d007a);
-  background: color-mix(in srgb, var(--brand, #3d007a) 8%, transparent);
-  border-radius: 0 0.5rem 0.5rem 0;
-  color: var(--text-muted, #5c5670);
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-left: 4px solid var(--brand-teal, var(--brand, #2A9D8F));
+  background: var(--pale-mint, #E8F3F1);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-muted, #64748B);
   font-size: 0.92rem;
+  line-height: 1.45;
 }
 
 .ws-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+  justify-content: flex-end;
 }
 
 .perm-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.5rem 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px 16px;
+  padding: 4px 0 8px;
 }
 
 .perm-grid label {
@@ -27,23 +30,74 @@
   gap: 0.5rem;
   align-items: flex-start;
   font-size: 0.9rem;
+  line-height: 1.35;
+  margin: 0;
 }
 
 .role-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 12px;
 }
 
 .health-disclaimer {
   font-size: 0.85rem;
-  color: var(--text-muted, #5c5670);
+  color: var(--text-muted, #64748B);
+}
+
+.grid--4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mb-4 { margin-bottom: 12px; }
+
+.assist-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.assist-filters .input,
+.assist-filters .select,
+.assist-filters .input--sm,
+.assist-filters .select--sm {
+  min-height: 36px;
+  height: 36px;
+}
+
+/* Keep workspace card headers balanced: title left, filters right */
+.content > .card > .card__header,
+#main > .card > .card__header {
+  align-items: flex-start;
+}
+
+.content > .card > .card__header .assist-filters,
+#main > .card > .card__header .assist-filters {
+  margin-left: auto;
+  padding-top: 2px;
+}
+
+@media (max-width: 1100px) {
+  .grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 720px) {
   .page-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .grid--4 { grid-template-columns: minmax(0, 1fr); }
+  .assist-filters {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .assist-filters .input,
+  .assist-filters .select {
+    flex: 1 1 100%;
   }
 }

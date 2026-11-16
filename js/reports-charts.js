@@ -245,7 +245,7 @@
     const pensionCounts = PENSION_TYPES.map((t) => seniors.filter((s) => s.pension === t).length);
     upsert('pension', {
       type: 'doughnut',
-      data: { labels: PENSION_TYPES, datasets: [{ data: pensionCounts, backgroundColor: [P[0], P[1], P[2], theme.approved, P[6]], borderColor: '#fff', borderWidth: 3, hoverOffset: 4 }] },
+      data: { labels: PENSION_TYPES, datasets: [{ data: pensionCounts, backgroundColor: [P[0], P[1], P[2], theme.approved, P[6]], borderColor: theme.surface || (theme.isDark ? '#1E293B' : '#fff'), borderWidth: 3, hoverOffset: 4 }] },
       options: {
         cutout: '62%',
         plugins: {
@@ -285,7 +285,7 @@
         labels: months.map((mo) => mo.label),
         datasets: [
           { type: 'bar', label: 'Amount released', data: releasedByMonth, backgroundColor: P[0], borderRadius: 4, maxBarThickness: 28, yAxisID: 'y', order: 2 },
-          { type: 'line', label: 'Requests filed', data: filedByMonth, borderColor: theme.pending, backgroundColor: theme.pending, borderWidth: 2, tension: 0.35, pointRadius: 3, pointBackgroundColor: '#fff', pointBorderWidth: 2, yAxisID: 'y1', order: 1 }
+          { type: 'line', label: 'Requests filed', data: filedByMonth, borderColor: theme.pending, backgroundColor: theme.pending, borderWidth: 2, tension: 0.35, pointRadius: 3, pointBackgroundColor: theme.surface || '#fff', pointBorderColor: theme.pending, pointBorderWidth: 2, yAxisID: 'y1', order: 1 }
         ]
       },
       options: {

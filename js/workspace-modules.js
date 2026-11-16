@@ -85,7 +85,7 @@
       });
       const missing = DB().all('documents').filter((d) => d.status === 'Missing' || d.status === 'Rejected').length;
       setSummary([
-        { label: 'Total checklist items', value: DB().all('documents').length, icon: 'fa-file', tone: 'violet' },
+        { label: 'Total checklist items', value: DB().all('documents').length, icon: 'fa-file', tone: 'info' },
         { label: 'Missing / rejected', value: missing, icon: 'fa-triangle-exclamation', tone: 'pending' },
         { label: 'Verified', value: DB().all('documents').filter((d) => d.status === 'Verified').length, icon: 'fa-circle-check', tone: 'approved' },
         { label: 'Submitted', value: DB().all('documents').filter((d) => d.status === 'Submitted').length, icon: 'fa-inbox', tone: 'info' }
@@ -174,7 +174,7 @@
       const covered = DB().all('seniors').filter((s) => s.pension && s.pension !== 'None' && s.status === 'Active');
       setSummary([
         { label: 'Active with pension', value: covered.length, icon: 'fa-money-bill-wave', tone: 'approved' },
-        { label: 'Social Pension', value: covered.filter((s) => s.pension === 'Social Pension').length, icon: 'fa-hand-holding-dollar', tone: 'violet' },
+        { label: 'Social Pension', value: covered.filter((s) => s.pension === 'Social Pension').length, icon: 'fa-hand-holding-dollar', tone: 'info' },
         { label: 'Tagged distributed', value: covered.filter((s) => s.pensionDistributedAt).length, icon: 'fa-stamp', tone: 'info' },
         { label: 'No pension recorded', value: DB().all('seniors').filter((s) => !s.pension || s.pension === 'None').length, icon: 'fa-circle-minus', tone: 'neutral' }
       ]);
@@ -225,7 +225,7 @@
         { label: 'Open', value: DB().all('followups').filter((x) => x.status === 'Open').length, icon: 'fa-folder-open', tone: 'pending' },
         { label: 'In progress', value: DB().all('followups').filter((x) => x.status === 'In Progress').length, icon: 'fa-spinner', tone: 'info' },
         { label: 'Resolved', value: DB().all('followups').filter((x) => x.status === 'Resolved').length, icon: 'fa-check', tone: 'approved' },
-        { label: 'Total', value: DB().all('followups').length, icon: 'fa-list', tone: 'violet' }
+        { label: 'Total', value: DB().all('followups').length, icon: 'fa-list', tone: 'info' }
       ]);
       body.innerHTML = rows.map((item) => `
         <tr>
@@ -345,29 +345,99 @@
   }
 
   Pages['health-dashboard'] = function () {
-    healthDisclaimer();
-    document.getElementById('listHeading').textContent = 'Recent health activity';
-    document.getElementById('moduleFilter').hidden = true;
-    document.getElementById('moduleHead').innerHTML = `<tr><th>When</th><th>Type</th><th>Senior</th><th>Summary</th></tr>`;
-    const body = document.getElementById('moduleBody');
-    setSummary([
-      { label: 'Health profiles', value: DB().all('healthProfiles').length, icon: 'fa-notes-medical', tone: 'violet' },
-      { label: 'Assessments', value: DB().all('healthAssessments').length, icon: 'fa-file-waveform', tone: 'info' },
-      { label: 'Vital readings', value: DB().all('vitalSigns').length, icon: 'fa-heart', tone: 'pending' },
-      { label: 'Open referrals', value: DB().all('medicalReferrals').filter((r) => r.status === 'Pending').length, icon: 'fa-hospital', tone: 'alert' }
-    ]);
+    const A = api();
+    const session = A.Session.get();
+    const now = new Date();
+    const hour = now.getHours();
+    const greet = document.getElementById('greeting');
+    const dateEl = document.getElementById('todayDate');
+    if (greet) greet.textContent = `${hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'}, ${session.name.split(' ')[0]}`;
+    if (dateEl) dateEl.textContent = now.toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+    const profiles = DB().all('healthProfiles') || [];
+    const assessments = DB().all('healthAssessments') || [];
+    const vitals = DB().all('vitalSigns') || [];
+    const referrals = DB().all('medicalReferrals') || [];
+    const visits = DB().all('homeVisits') || [];
+    const programs = (DB().all('programs') || []).filter((p) => /health|medical|wellness|nutrition|checkup/i.test(`${p.type || ''} ${p.title || ''}`) || p.category === 'Health');
+    const openReferrals = referrals.filter((r) => r.status === 'Pending' || r.status === 'Open' || r.status === 'In Progress');
+    const upcomingVisits = visits.filter((v) => {
+      const status = String(v.status || '');
+      if (/completed|cancelled|done/i.test(status)) return false;
+      const when = v.scheduledAt || v.createdAt;
+      if (!when) return true;
+      return new Date(when).getTime() >= now.getTime() - 86400000;
+    }).sort((a, b) => String(a.scheduledAt || a.createdAt || '').localeCompare(String(b.scheduledAt || b.createdAt || '')));
+    const followVisits = visits.filter((v) => /follow|pending|scheduled|open/i.test(String(v.status || '')));
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const assessmentsMonth = assessments.filter((a) => a.assessedAt && new Date(a.assessedAt) >= monthStart).length;
+    const vitalsMonth = vitals.filter((v) => v.measuredAt && new Date(v.measuredAt) >= monthStart).length;
+
+    const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    const setHtml = (id, value) => { const el = document.getElementById(id); if (el) el.innerHTML = value; };
+
+    setText('statProfiles', u().fmtNumber(profiles.length));
+    setHtml('statProfilesMeta', `<strong>${u().fmtNumber(A.DB.all('seniors').filter((s) => s.status === 'Active').length)}</strong> active seniors in registry`);
+    setText('statAssessments', u().fmtNumber(assessments.length));
+    setHtml('statAssessmentsMeta', `<strong>${u().fmtNumber(assessmentsMonth)}</strong> recorded this month`);
+    setText('statVitals', u().fmtNumber(vitals.length));
+    setHtml('statVitalsMeta', `<strong>${u().fmtNumber(vitalsMonth)}</strong> this month`);
+    setText('statReferrals', u().fmtNumber(openReferrals.length));
+    setHtml('statReferralsMeta', `${u().fmtNumber(referrals.length)} total referrals`);
+    setText('statVisits', u().fmtNumber(upcomingVisits.length));
+    setHtml('statVisitsMeta', upcomingVisits[0] ? `Next: ${u().esc(u().fmtDate(upcomingVisits[0].scheduledAt || upcomingVisits[0].createdAt))}` : 'No upcoming visits');
+    setText('statVisitFollowups', u().fmtNumber(followVisits.length));
+    setText('statVisitFollowupsMeta', 'Scheduled or pending follow-up');
+    setText('statHealthPrograms', u().fmtNumber(programs.length || (DB().all('programs') || []).length));
+    setHtml('statHealthProgramsMeta', programs.length ? 'Health-tagged programs' : 'All programs (no health tag filter matched)');
+
+    const attention = [];
+    if (openReferrals.length) attention.push({ href: '/MedicalReferrals', mark: 'is-alert', title: `${openReferrals.length} open medical referral${openReferrals.length === 1 ? '' : 's'}`, meta: 'Awaiting completion or update' });
+    if (upcomingVisits.length) attention.push({ href: '/HomeVisits', mark: 'is-info', title: `${upcomingVisits.length} home visit${upcomingVisits.length === 1 ? '' : 's'} ahead`, meta: 'Review schedule and notes' });
+    if (!profiles.length) attention.push({ href: '/HealthProfiles', mark: 'is-warn', title: 'No health profiles yet', meta: 'Link profiles from the senior registry' });
+    const attentionEl = document.getElementById('healthAttention');
+    if (attentionEl) {
+      attentionEl.innerHTML = attention.length ? attention.map((item) => `
+        <li><a class="attention-item" href="${item.href}">
+          <span class="attention-item__mark ${item.mark}" aria-hidden="true"></span>
+          <span class="attention-item__body"><strong>${u().esc(item.title)}</strong><small>${u().esc(item.meta)}</small></span>
+        </a></li>`).join('') : `<li class="dash-empty"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><strong>No urgent health items</strong><span>Referrals and visits look clear.</span></li>`;
+    }
+
     const events = [];
-    DB().all('healthAssessments').slice(0, 8).forEach((a) => events.push({ at: a.assessedAt, type: 'Assessment', seniorId: a.seniorId, summary: a.generalStatus || a.findings || '—' }));
-    DB().all('vitalSigns').slice(0, 8).forEach((v) => events.push({ at: v.measuredAt, type: 'Vitals', seniorId: v.seniorId, summary: `BP ${v.systolic || '—'}/${v.diastolic || '—'} · Pulse ${v.pulseRate || '—'}` }));
-    DB().all('homeVisits').slice(0, 8).forEach((v) => events.push({ at: v.scheduledAt || v.createdAt, type: 'Home visit', seniorId: v.seniorId, summary: v.status }));
-    DB().all('medicalReferrals').slice(0, 8).forEach((r) => events.push({ at: r.referredAt, type: 'Referral', seniorId: r.seniorId, summary: `${r.destination} · ${r.status}` }));
-    events.sort((a, b) => String(b.at).localeCompare(String(a.at)));
-    body.innerHTML = events.slice(0, 20).map((e) => `
-      <tr><td>${u().esc(u().fmtDateTime(e.at))}</td><td>${u().esc(e.type)}</td><td>${u().esc(seniorName(e.seniorId))}</td><td>${u().esc(e.summary)}</td></tr>
-    `).join('') || emptyRow(4, 'No health activity yet', 'Start from Senior Health Profiles.');
-    document.getElementById('pageActions').innerHTML = `
-      <a class="btn btn--secondary" href="/HealthProfiles">Profiles</a>
-      <a class="btn btn--primary" href="/VitalSigns">Record vitals</a>`;
+    assessments.slice(0, 12).forEach((a) => events.push({ at: a.assessedAt, type: 'Assessment', seniorId: a.seniorId, summary: a.generalStatus || a.findings || '—' }));
+    vitals.slice(0, 12).forEach((v) => events.push({ at: v.measuredAt, type: 'Vitals', seniorId: v.seniorId, summary: `BP ${v.systolic || '—'}/${v.diastolic || '—'} · Pulse ${v.pulseRate || '—'}` }));
+    visits.slice(0, 12).forEach((v) => events.push({ at: v.scheduledAt || v.createdAt, type: 'Home visit', seniorId: v.seniorId, summary: v.status || '—' }));
+    referrals.slice(0, 12).forEach((r) => events.push({ at: r.referredAt, type: 'Referral', seniorId: r.seniorId, summary: `${r.destination || '—'} · ${r.status || '—'}` }));
+    events.sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+
+    const body = document.getElementById('healthRecentBody');
+    if (body) {
+      body.innerHTML = events.slice(0, 10).map((e) => `
+        <tr>
+          <td class="nowrap">${u().esc(e.at ? u().fmtDateTime(e.at) : '—')}</td>
+          <td>${u().esc(e.type)}</td>
+          <td>${u().esc(seniorName(e.seniorId))}</td>
+          <td>${u().esc(e.summary)}</td>
+        </tr>`).join('') || emptyRow(4, 'No health activity yet', 'Start from Senior Health Profiles.');
+    }
+
+    const visitList = document.getElementById('upcomingVisits');
+    if (visitList) {
+      visitList.innerHTML = upcomingVisits.length ? upcomingVisits.slice(0, 5).map((v) => {
+        const when = v.scheduledAt || v.createdAt;
+        const d = when ? new Date(when) : null;
+        return `<li>
+          <a class="event-item" href="/HomeVisits">
+            <span class="event-item__date"><small>${d ? d.toLocaleDateString('en-PH', { month: 'short' }) : '—'}</small><strong>${d ? d.getDate() : '—'}</strong></span>
+            <span class="event-item__body">
+              <strong>${u().esc(seniorName(v.seniorId))}</strong>
+              <small>${u().esc(v.status || 'Scheduled')}${v.notes ? ` · ${u().esc(String(v.notes).slice(0, 48))}` : ''}</small>
+            </span>
+          </a>
+        </li>`;
+      }).join('') : `<li class="dash-empty"><i class="fa-solid fa-house-chimney-medical" aria-hidden="true"></i><strong>No upcoming visits</strong><span>Schedule a home visit when needed.</span></li>`;
+    }
   };
 
   Pages['health-profiles'] = function () {
@@ -772,7 +842,7 @@
       }
       rows = rows.filter((r) => !q || `${r.name} ${r.details} ${r.status}`.toLowerCase().includes(q));
       setSummary([
-        { label: 'Seniors', value: DB().all('seniors').length, icon: 'fa-users', tone: 'violet' },
+        { label: 'Seniors', value: DB().all('seniors').length, icon: 'fa-users', tone: 'info' },
         { label: 'Assistance requests', value: DB().all('assistance').length, icon: 'fa-hand-holding-medical', tone: 'pending' },
         { label: 'Programs', value: DB().all('programs').length, icon: 'fa-calendar', tone: 'info' },
         { label: 'Documents tracked', value: DB().all('documents').length, icon: 'fa-file', tone: 'approved' }

@@ -63,7 +63,7 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.28), transparent 58%),
-    #2E005C;
+    #24476B;
   font-size: 4.2mm;
   line-height: 1;
 }
@@ -257,7 +257,7 @@
   min-height: var(--touch-min, 44px);
   max-width: calc(100vw - 32px);
   padding: 8px 8px 8px 16px;
-  border: 1px solid var(--border-light);
+  border: var(--border);
   border-radius: var(--radius-pill);
   background: var(--surface-white);
   box-shadow: var(--shadow-modal);
@@ -428,7 +428,7 @@ html[data-theme="dark"] .skeleton::after {
   gap: 8px;
   min-height: var(--touch-min, 44px);
   padding: 12px 14px;
-  border: 1px solid var(--border-light);
+  border: var(--border);
   border-radius: var(--radius-md);
   background: var(--surface-white);
   transition: var(--transition-fast);
@@ -577,7 +577,7 @@ html[data-theme="dark"] .skeleton::after {
   place-items: center;
   width: var(--touch-min, 44px);
   height: var(--touch-min, 44px);
-  border: 1px solid var(--border-light);
+  border: var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface-white);
   color: var(--text-dark);
@@ -585,7 +585,7 @@ html[data-theme="dark"] .skeleton::after {
 }
 
 .theme-toggle:hover {
-  border-color: var(--primary-toxic-violet);
+  border-color: var(--border-focus, var(--primary-toxic-violet));
   color: var(--primary-toxic-violet);
   transform: translateY(-1px);
 }

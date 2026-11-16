@@ -1,34 +1,37 @@
 /* BSCIAMS Tabler government theme
-   Primary: Deep navy #183153 | Secondary: #426B91 | Background: #F5F7FA
-   Built on official Tabler admin components: https://tabler.io/
+   Deep Blue #24476B | Calm Teal #2A9D8F | Workspace #D8E0EC
+   Built on Tabler Core 1.7.5: https://tabler.io/
 */
 
 :root,
 [data-bs-theme="light"],
 html {
-  --tblr-primary: #183153;
-  --tblr-primary-rgb: 24, 49, 83;
-  --tblr-secondary: #426b91;
-  --tblr-secondary-rgb: 66, 107, 145;
-  --tblr-body-bg: #f5f7fa;
-  --tblr-body-color: #1f2a37;
-  --tblr-border-color: #e6ebf1;
+  --tblr-primary: #24476b;
+  --tblr-primary-rgb: 36, 71, 107;
+  --tblr-secondary: #2a9d8f;
+  --tblr-secondary-rgb: 42, 157, 143;
+  --tblr-body-bg: #d8e0ec;
+  --tblr-body-color: #25364a;
+  --tblr-border-color: #94a3b8;
   --tblr-font-sans-serif: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-  /* Map existing BSCIAMS tokens onto the Tabler navy system */
-  --brand: #183153;
-  --brand-2: #426b91;
-  --bg: #f5f7fa;
+  --brand: #24476b;
+  --brand-2: #2a9d8f;
+  --bg: #d8e0ec;
   --surface: #ffffff;
-  --text: #1f2a37;
-  --text-muted: #5b6b7c;
-  --border: #e6ebf1;
+  --text: #25364a;
+  --text-muted: #64748b;
+  /* Color tokens only — Global.css owns the --border shorthand (1px solid …) */
+  --border-color: #94a3b8;
+  --border-light: #94a3b8;
+  --border-strong: #64748b;
+  --tblr-border-color: #94a3b8;
   --status-approved: #2f9e74;
   --status-pending: #c9852d;
   --status-alert: #c4473a;
   --status-info: #3b82a8;
-  --chart-1: #183153;
-  --chart-2: #426b91;
+  --chart-1: #24476b;
+  --chart-2: #2a9d8f;
   --chart-3: #2f9e74;
   --chart-4: #c9852d;
   --chart-5: #3b82a8;
@@ -41,12 +44,47 @@ body {
   font-family: var(--tblr-font-sans-serif);
 }
 
-/* Dark navy sidebar (Tabler + existing .sidebar shell) */
+/* Neutralize Tabler .card flex growth / gutters that inflate empty space.
+   Keep display flexible so .mini-stat, .kpi, and list cards can set their own. */
+.app .card,
+.content .card,
+.auth .card {
+  flex-grow: 0 !important;
+  margin-bottom: 0 !important;
+  min-height: 0 !important;
+}
+
+/* Tabler defaults .card to column flex — restore horizontal layouts explicitly */
+.content .card.mini-stat,
+.content .card.kpi,
+.content .card.status-pill,
+.content .card.stat-card,
+.content form.card.report-filters,
+.content form.card.filter-bar,
+.content .filter-bar.card {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+/* Deep blue sidebar (light / high-contrast) */
 .sidebar,
 .navbar-vertical,
 .navbar-dark {
-  background: #183153 !important;
+  background: var(--sidebar-bg, #24476b) !important;
   color: #e8eef5;
+  border-right: 1px solid transparent !important;
+}
+
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .navbar-vertical,
+html[data-theme="dark"] .navbar-dark {
+  background: #243449 !important;
+  color: #e2e8f0;
+  border-right-color: #334155 !important;
+}
+
+.sidebar .nav-label {
+  color: rgba(255, 255, 255, 0.45) !important;
 }
 
 .sidebar .nav-link,
@@ -55,39 +93,162 @@ body {
   color: rgba(255, 255, 255, 0.82);
 }
 
-.sidebar .nav-link.is-active,
 .sidebar .nav-link:hover,
-.navbar-vertical .nav-link.active,
+.sidebar .nav-group__toggle:hover,
 .navbar-vertical .nav-link:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-link:hover,
+html[data-theme="dark"] .sidebar .nav-group__toggle:hover {
+  background: #29384d !important;
+  color: #e2e8f0 !important;
+}
+
+.sidebar .nav-link.is-active,
+.navbar-vertical .nav-link.active {
+  background: rgba(42, 157, 143, 0.22) !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-link.is-active {
+  background: rgba(42, 157, 143, 0.28) !important;
+  color: #e2e8f0 !important;
+}
+
+.sidebar .nav-link.is-active::before {
+  background: #2a9d8f !important;
+}
+
+.sidebar .nav-group__toggle {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.sidebar .sidebar__brand {
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.sidebar .sidebar__footer {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.sidebar .sidebar-user {
+  background: rgba(255, 255, 255, 0.08) !important;
   color: #fff;
+}
+
+.sidebar .sidebar-user__text small {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.sidebar .brand,
+.sidebar .brand__text,
+.sidebar .brand__text strong {
+  color: #fff !important;
+}
+
+.sidebar .brand__text small {
+  color: rgba(255, 255, 255, 0.65) !important;
 }
 
 .brand__mark,
 .sidebar .brand__mark {
-  background: #426b91;
+  background: #2a9d8f !important;
+}
+
+.sidebar .icon-btn {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.sidebar .icon-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+}
+
+.sidebar .nav-link__badge {
+  background: rgba(201, 133, 45, 0.25) !important;
+  color: #fde68a !important;
 }
 
 .btn--primary,
 .btn-primary {
-  background: #183153 !important;
-  border-color: #183153 !important;
+  background: #24476b !important;
+  border-color: #24476b !important;
 }
 
 .btn--primary:hover,
 .btn-primary:hover {
-  background: #426b91 !important;
-  border-color: #426b91 !important;
+  background: #1b3652 !important;
+  border-color: #1b3652 !important;
 }
 
-.card,
-.page-header,
-.table {
-  border-color: var(--border);
+html[data-theme="dark"] .btn--primary,
+html[data-theme="dark"] .btn-primary {
+  background: #2a9d8f !important;
+  border-color: #2a9d8f !important;
+}
+
+html[data-theme="dark"] .btn--primary:hover,
+html[data-theme="dark"] .btn-primary:hover {
+  background: #34b3a3 !important;
+  border-color: #34b3a3 !important;
+}
+
+html[data-theme="dark"] .btn--secondary,
+html[data-theme="dark"] .btn-secondary {
+  background: #172235 !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .btn--secondary:hover,
+html[data-theme="dark"] .btn-secondary:hover {
+  background: #29384d !important;
+  border-color: #475569 !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] body {
+  background: #111827 !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .page-title,
+html[data-theme="dark"] .card__title {
+  color: #e2e8f0 !important;
+}
+
+/* Keep Tabler from stripping or recoloring BSCIAMS panel borders */
+.app .card,
+.content .card,
+.auth .card {
+  border: 1px solid var(--border-color, #94a3b8) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .app .card,
+html[data-theme="dark"] .content .card,
+html[data-theme="dark"] .auth .card {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+.app .card.danger-zone,
+.content .card.danger-zone {
+  border-color: #f6d2d2 !important;
+}
+
+.content .page-header {
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 .table {
   font-size: 0.92rem;
+  border-color: var(--border-color, #cbd5e1);
 }
 
 .badge--approved,
@@ -116,7 +277,18 @@ body {
 
 .page-title,
 .card__title {
-  color: #183153;
+  color: #24476b;
+}
+
+/* Tabler page-header is a tall column stack — keep BSCIAMS headers horizontal */
+.content .page-header {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: flex-start !important;
+  margin-bottom: 16px !important;
+  padding: 0 !important;
+  min-height: 0 !important;
 }
 
 .content {
@@ -125,6 +297,6 @@ body {
 
 @media (max-width: 960px) {
   .sidebar {
-    box-shadow: 0 8px 24px rgba(24, 49, 83, 0.25);
+    box-shadow: 0 8px 24px rgba(36, 71, 107, 0.28);
   }
 }

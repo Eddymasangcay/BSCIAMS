@@ -96,10 +96,14 @@
   ];
 
   const NAV = [
-    { label: 'Overview', roles: ['Administrator', 'Barangay Staff'], items: [
-      { page: 'dashboard', href: '/Dashboard', icon: 'fa-gauge-high', text: 'Dashboard' },
+    { label: 'Overview', roles: ['Administrator'], items: [
+      { page: 'admin-dashboard', href: '/AdminDashboard', icon: 'fa-gauge-high', text: 'Admin Dashboard' },
       { page: 'reports', href: '/ReportsAnalytics', icon: 'fa-chart-pie', text: 'Reports & Analytics', perm: 'report.view' },
-      { page: 'office-records', href: '/OfficeRecords', icon: 'fa-folder-tree', text: 'Office Records Overview', perm: 'records.overview', roles: ['Administrator'] }
+      { page: 'office-records', href: '/OfficeRecords', icon: 'fa-folder-tree', text: 'Office Records Overview', perm: 'records.overview' }
+    ] },
+    { label: 'Overview', roles: ['Barangay Staff'], items: [
+      { page: 'dashboard', href: '/Dashboard', icon: 'fa-gauge-high', text: 'Dashboard' },
+      { page: 'reports', href: '/ReportsAnalytics', icon: 'fa-chart-pie', text: 'Reports & Analytics', perm: 'report.view' }
     ] },
     { label: 'Health Overview', roles: ['Health Worker'], items: [
       { page: 'health-dashboard', href: '/HealthDashboard', icon: 'fa-heart-pulse', text: 'Health Dashboard', perm: 'health.view' },
@@ -140,9 +144,9 @@
 
   const THEMES = ['light', 'dark', 'high-contrast'];
   const THEME_META = {
-    light: { label: 'Light theme', next: 'Switch to dark theme', icon: 'fa-sun', color: '#183153' },
-    dark: { label: 'Dark theme', next: 'Switch to high contrast', icon: 'fa-moon', color: '#141018' },
-    'high-contrast': { label: 'High contrast', next: 'Switch to light theme', icon: 'fa-circle-half-stroke', color: '#2A0057' }
+    light: { label: 'Light theme', next: 'Switch to dark theme', icon: 'fa-sun', color: '#24476B' },
+    dark: { label: 'Dark theme', next: 'Switch to high contrast', icon: 'fa-moon', color: '#111827' },
+    'high-contrast': { label: 'High contrast', next: 'Switch to light theme', icon: 'fa-circle-half-stroke', color: '#0B2A4A' }
   };
   const Theme = {
     get() {
@@ -151,13 +155,38 @@
         return THEMES.includes(t) ? t : 'light';
       } catch (_) { return 'light'; }
     },
-    apply(theme) {
+    apply(theme, opts = {}) {
       const next = THEMES.includes(theme) ? theme : 'light';
       document.documentElement.setAttribute('data-theme', next);
       try { localStorage.setItem(THEME_KEY, next); } catch (_) {}
       const meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.content = THEME_META[next].color;
       this.syncToggle();
+      if (opts.refreshCharts !== false) {
+        try { this.refreshCharts(); } catch (_) { /* Chart may not be ready yet */ }
+      }
+      try {
+        document.dispatchEvent(new CustomEvent('bscims:themechange', { detail: { theme: next } }));
+      } catch (_) {}
+    },
+    refreshCharts() {
+      if (typeof window.Chart === 'undefined' || typeof chartTheme !== 'function') return;
+      const theme = chartTheme();
+      if (!theme) return;
+      document.querySelectorAll('canvas').forEach((canvas) => {
+        const chart = window.Chart.getChart?.(canvas);
+        if (!chart) return;
+        const scales = chart.options.scales || {};
+        Object.values(scales).forEach((scale) => {
+          if (!scale) return;
+          if (scale.grid) scale.grid.color = theme.border;
+          if (scale.ticks) scale.ticks.color = theme.muted;
+        });
+        if (chart.options.plugins?.legend?.labels) {
+          chart.options.plugins.legend.labels.color = theme.muted;
+        }
+        chart.update('none');
+      });
     },
     cycle() {
       const next = THEMES[(THEMES.indexOf(this.get()) + 1) % THEMES.length];
@@ -184,7 +213,7 @@
       this.syncToggle(root);
     }
   };
-  Theme.apply(Theme.get());
+  Theme.apply(Theme.get(), { refreshCharts: false });
 
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
@@ -894,7 +923,7 @@
         role: user.role,
         username: user.username || '',
         permissions: Array.isArray(user.permissions) ? user.permissions : (PERMISSIONS[user.role] || []),
-        home: user.home || (user.role === 'Health Worker' ? '/HealthDashboard' : '/Dashboard'),
+        home: user.home || (user.role === 'Health Worker' ? '/HealthDashboard' : user.role === 'Administrator' ? '/AdminDashboard' : '/Dashboard'),
         loginAt: new Date().toISOString(),
         lastActive: Date.now(),
         ip: '',
@@ -1510,7 +1539,7 @@
         </div>`;
     }).join('');
 
-    const home = session.home || (session.role === 'Health Worker' ? '/HealthDashboard' : '/Dashboard');
+    const home = session.home || (session.role === 'Health Worker' ? '/HealthDashboard' : session.role === 'Administrator' ? '/AdminDashboard' : '/Dashboard');
     sidebar.innerHTML = `
       <div class="sidebar__brand">
         <a class="brand" href="${home}" aria-label="BSCIAMS home">
@@ -1604,9 +1633,9 @@
               <small>${esc(session.role)} · Signed in ${esc(relTime(session.loginAt).toLowerCase())}</small>
             </div>
             <div class="dropdown-menu">
-              <a class="dropdown-item" href="/Dashboard"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i>Dashboard</a>
-              <a class="dropdown-item" href="/DatabaseBackup#settings"><i class="fa-solid fa-gear" aria-hidden="true"></i>System settings</a>
-              <a class="dropdown-item" href="/AuditTrail"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>Activity log</a>
+              <a class="dropdown-item" href="${session.home || (session.role === 'Health Worker' ? '/HealthDashboard' : session.role === 'Administrator' ? '/AdminDashboard' : '/Dashboard')}"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i>Dashboard</a>
+              ${session.role === 'Administrator' ? `<a class="dropdown-item" href="/DatabaseBackup#settings"><i class="fa-solid fa-gear" aria-hidden="true"></i>System settings</a>
+              <a class="dropdown-item" href="/AuditTrail"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>Activity log</a>` : ''}
               <div class="dropdown-divider"></div>
               <button type="button" class="dropdown-item dropdown-item--danger" data-action="logout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Sign out</button>
             </div>
@@ -1951,29 +1980,53 @@
   function chartTheme() {
     if (typeof window.Chart === 'undefined') return null;
     const C = window.Chart;
-    const muted = cssVar('--text-muted');
-    const border = cssVar('--border-light');
-    C.defaults.font.family = cssVar('--font-main') || 'Inter, sans-serif';
-    C.defaults.font.size = 12;
-    C.defaults.color = muted;
-    C.defaults.borderColor = border;
-    C.defaults.animation.duration = 300;
-    C.defaults.maintainAspectRatio = false;
-    C.defaults.plugins.legend.labels.usePointStyle = true;
-    C.defaults.plugins.legend.labels.boxWidth = 8;
-    C.defaults.plugins.legend.labels.boxHeight = 8;
-    C.defaults.plugins.legend.labels.padding = 16;
-    Object.assign(C.defaults.plugins.tooltip, {
-      backgroundColor: cssVar('--text-dark'), padding: 10, cornerRadius: 8, displayColors: true, boxPadding: 4,
-      titleFont: { weight: '600' }
-    });
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const muted = cssVar('--text-muted') || '#94A3B8';
+    const border = cssVar('--border-color') || cssVar('--border-light') || '#334155';
+    const surface = cssVar('--surface-white') || (isDark ? '#1E293B' : '#FFFFFF');
+    try {
+      C.defaults.font = C.defaults.font || {};
+      C.defaults.font.family = cssVar('--font-main') || 'Inter, sans-serif';
+      C.defaults.font.size = 12;
+      C.defaults.color = muted;
+      C.defaults.borderColor = border;
+      if (C.defaults.animation && typeof C.defaults.animation === 'object') {
+        C.defaults.animation.duration = 300;
+      }
+      C.defaults.maintainAspectRatio = false;
+      C.defaults.plugins = C.defaults.plugins || {};
+      C.defaults.plugins.legend = C.defaults.plugins.legend || {};
+      C.defaults.plugins.legend.labels = Object.assign({}, C.defaults.plugins.legend.labels, {
+        usePointStyle: true,
+        boxWidth: 8,
+        boxHeight: 8,
+        padding: 16,
+        color: muted
+      });
+      C.defaults.plugins.tooltip = Object.assign({}, C.defaults.plugins.tooltip, {
+        backgroundColor: isDark ? '#0B1220' : '#1E293B',
+        titleColor: '#E2E8F0',
+        bodyColor: '#CBD5E1',
+        borderColor: isDark ? '#334155' : 'transparent',
+        borderWidth: isDark ? 1 : 0,
+        padding: 10,
+        cornerRadius: 8,
+        displayColors: true,
+        boxPadding: 4,
+        titleFont: { weight: '600' }
+      });
+    } catch (_) { /* keep dataset colors even if defaults fail */ }
     return {
       primary: cssVar('--primary-toxic-violet'),
       primarySoft: cssVar('--primary-soft-2'),
       approved: cssVar('--status-approved'),
       pending: cssVar('--status-pending'),
       alert: cssVar('--status-alert'),
-      muted, border,
+      info: cssVar('--status-info'),
+      muted,
+      border,
+      surface,
+      isDark,
       palette: ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5', '--chart-6', '--chart-7'].map(cssVar)
     };
   }
@@ -2021,7 +2074,7 @@
         Session._cache = null;
       } else {
         if (!samePerson) Session.start(remote, true);
-        location.replace(remote.home || (remote.role === 'Health Worker' ? '/HealthDashboard' : '/Dashboard'));
+        location.replace(remote.home || (remote.role === 'Health Worker' ? '/HealthDashboard' : remote.role === 'Administrator' ? '/AdminDashboard' : '/Dashboard'));
         return;
       }
     } else if (existing) {
@@ -2094,61 +2147,216 @@
       localStorage.setItem(LAST_USER_KEY, result.user.username);
       await DB.log('Login', 'Authentication', `${result.user.name} signed in as ${result.user.role}`);
       flash(`Signed in as ${result.user.role}.`, 'success', `Welcome, ${result.user.name.split(' ')[0]}!`);
-      location.href = result.user.home || (result.user.role === 'Health Worker' ? '/HealthDashboard' : '/Dashboard');
+      location.href = result.user.home || (result.user.role === 'Health Worker' ? '/HealthDashboard' : result.user.role === 'Administrator' ? '/AdminDashboard' : '/Dashboard');
     });
   };
 
-  /* Dashboard ------------------------------------------------------------- */
-  Pages.dashboard = function () {
-    const session = Session.get();
+  const ACTION_ICON = {
+    Create: 'fa-plus', Update: 'fa-pen', Delete: 'fa-trash', Login: 'fa-right-to-bracket',
+    Logout: 'fa-right-from-bracket', Approve: 'fa-check', Release: 'fa-hand-holding-dollar',
+    Deny: 'fa-ban', Export: 'fa-file-export', Backup: 'fa-database', Restore: 'fa-rotate-left',
+    'Failed Login': 'fa-shield-halved', Access: 'fa-eye'
+  };
+
+  function greetDashboard(session) {
     const now = new Date();
     const hour = now.getHours();
-    $('#greeting').textContent = `${hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'}, ${session.name.split(' ')[0]}`;
-    $('#todayDate').textContent = now.toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    const greetEl = $('#greeting');
+    const dateEl = $('#todayDate');
+    if (greetEl) {
+      const base = greetEl.dataset.title || greetEl.textContent.trim() || 'Dashboard';
+      greetEl.textContent = `${hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'}, ${session.name.split(' ')[0]}`;
+      if (base && !/good (morning|afternoon|evening)/i.test(base)) greetEl.dataset.title = base;
+    }
+    if (dateEl) dateEl.textContent = now.toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    return now;
+  }
 
-    const seniors = DB.all('seniors');
-    const active = seniors.filter((s) => s.status === 'Active');
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const newThisMonth = seniors.filter((s) => new Date(s.registeredAt) >= monthStart).length;
-    const pensioners = active.filter((s) => s.pension !== 'None').length;
-    const pending = DB.all('assistance').filter((a) => a.status === 'Pending');
-    const upcoming = sortBy(DB.all('programs').filter((p) => programStatus(p) === 'Upcoming'), 'date', 'asc');
-
-    $('#statTotal').textContent = fmtNumber(active.length);
-    $('#statTotalMeta').innerHTML = `<span class="stat-card__trend is-up"><i class="fa-solid fa-arrow-trend-up" aria-hidden="true"></i>+${newThisMonth}</span> registered this month`;
-    $('#statPension').textContent = fmtNumber(pensioners);
-    $('#statPensionMeta').innerHTML = `<strong>${active.length ? Math.round((pensioners / active.length) * 100) : 0}%</strong> of active seniors covered`;
-    $('#statPending').textContent = fmtNumber(pending.length);
-    $('#statPendingMeta').innerHTML = `<strong>${fmtMoney(pending.reduce((sum, a) => sum + a.amount, 0))}</strong> awaiting approval`;
-    $('#statPrograms').textContent = fmtNumber(upcoming.length);
-    $('#statProgramsMeta').innerHTML = upcoming.length ? `Next on <strong>${fmtDate(upcoming[0].date, { month: 'short', day: 'numeric' })}</strong>` : 'No scheduled events';
-
-    const events = $('#upcomingEvents');
-    events.innerHTML = upcoming.length ? upcoming.slice(0, 4).map((p) => {
-      const d = parseDate(p.date);
-      return `
-        <li>
-          <a class="event-item" href="/ProgramManagement?open=${encodeURIComponent(p.id)}">
-            <span class="event-item__date"><small>${d.toLocaleDateString('en-PH', { month: 'short' })}</small><strong>${d.getDate()}</strong></span>
-            <span class="event-item__body">
-              <strong>${esc(p.title)}</strong>
-              <small><i class="fa-regular fa-clock" aria-hidden="true"></i> ${esc(fmtTime(p.time))} · ${esc(p.venue)}</small>
-            </span>
-            ${badge(p.type, 'violet', 'style="margin-left:auto"')}
-          </a>
-        </li>`;
-    }).join('') : `<li>${emptyState('No upcoming programs', 'Schedule one from Programs & Events.', 'fa-calendar')}</li>`;
-
-    const ACTION_ICON = { Create: 'fa-plus', Update: 'fa-pen', Delete: 'fa-trash', Login: 'fa-right-to-bracket', Logout: 'fa-right-from-bracket', Approve: 'fa-check', Release: 'fa-hand-holding-dollar', Deny: 'fa-ban', Export: 'fa-file-export', Backup: 'fa-database', Restore: 'fa-rotate-left', 'Failed Login': 'fa-shield-halved' };
-    const activity = DB.all('logs').filter((l) => l.action !== 'Failed Login').slice(0, 6);
-    $('#recentActivity').innerHTML = activity.map((l) => `
+  function renderActivityList(target, logs, emptyTitle, emptyHint) {
+    const el = typeof target === 'string' ? $(target) : target;
+    if (!el) return;
+    el.innerHTML = logs.length ? logs.map((l) => `
       <li class="activity-item">
         <span class="activity-item__icon tone-${STATUS_TONE[l.severity] || 'info'}"><i class="fa-solid ${ACTION_ICON[l.action] || 'fa-circle'}" aria-hidden="true"></i></span>
         <span class="activity-item__body">
           <span>${esc(l.details)}</span>
           <small>${esc(l.user)} · ${esc(relTime(l.ts))}</small>
         </span>
-      </li>`).join('') || `<li>${emptyState('No activity yet', 'Actions will appear here.', 'fa-clock-rotate-left')}</li>`;
+      </li>`).join('') : `<li class="dash-empty"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><strong>${esc(emptyTitle)}</strong><span>${esc(emptyHint)}</span></li>`;
+  }
+
+  /* Staff Dashboard ------------------------------------------------------- */
+  Pages.dashboard = function () {
+    const session = Session.get();
+    if (session.role === 'Administrator') {
+      location.replace('/AdminDashboard');
+      return;
+    }
+    const now = greetDashboard(session);
+
+    const seniors = DB.all('seniors');
+    const active = seniors.filter((s) => s.status === 'Active');
+    const inactive = seniors.filter((s) => s.status !== 'Active');
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const newThisMonth = seniors.filter((s) => s.registeredAt && new Date(s.registeredAt) >= monthStart).length;
+    const assistance = DB.all('assistance');
+    const pending = assistance.filter((a) => a.status === 'Pending');
+    const approved = assistance.filter((a) => a.status === 'Approved');
+    const released = assistance.filter((a) => a.status === 'Released');
+    const docs = DB.all('documents') || [];
+    const docsNeed = docs.filter((d) => d.status === 'Missing' || d.status === 'Submitted' || d.status === 'Rejected');
+    const followups = (DB.all('followups') || []).filter((f) => f.status === 'Open' || f.status === 'In Progress');
+    const upcoming = sortBy(DB.all('programs').filter((p) => programStatus(p) === 'Upcoming'), 'date', 'asc');
+
+    $('#statTotal').textContent = fmtNumber(seniors.length);
+    $('#statTotalMeta').innerHTML = `<span class="stat-card__trend is-up"><i class="fa-solid fa-arrow-trend-up" aria-hidden="true"></i>+${newThisMonth}</span> new this month · <strong>${fmtNumber(active.length)}</strong> active · <strong>${fmtNumber(inactive.length)}</strong> inactive`;
+    $('#statPending').textContent = fmtNumber(pending.length);
+    $('#statPendingMeta').innerHTML = `<strong>${fmtMoney(pending.reduce((sum, a) => sum + Number(a.amount || 0), 0))}</strong> awaiting approval`;
+    $('#statDocs').textContent = fmtNumber(docsNeed.length);
+    $('#statDocsMeta').innerHTML = docs.length
+      ? `<strong>${fmtNumber(docs.filter((d) => d.status === 'Verified').length)}</strong> verified of ${fmtNumber(docs.length)}`
+      : 'No document checklist yet';
+    $('#statPrograms').textContent = fmtNumber(upcoming.length);
+    $('#statProgramsMeta').innerHTML = upcoming.length ? `Next on <strong>${fmtDate(upcoming[0].date, { month: 'short', day: 'numeric' })}</strong>` : 'No scheduled events';
+    $('#statApproved').textContent = fmtNumber(approved.length);
+    $('#statApprovedMeta').textContent = 'Ready for release';
+    $('#statReleased').textContent = fmtNumber(released.length);
+    $('#statReleasedMeta').textContent = 'Completed disbursements';
+    $('#statFollowups').textContent = fmtNumber(followups.length);
+    $('#statFollowupsMeta').textContent = followups.length ? 'Pending follow-up work' : 'All clear';
+
+    const attention = [];
+    if (pending.length) attention.push({ href: '/AssistanceManagement', mark: 'is-warn', title: `${pending.length} pending assistance request${pending.length === 1 ? '' : 's'}`, meta: 'Awaiting review or approval' });
+    if (docsNeed.length) attention.push({ href: '/DocumentVerification', mark: 'is-warn', title: `${docsNeed.length} document${docsNeed.length === 1 ? '' : 's'} need attention`, meta: 'Missing, submitted, or rejected' });
+    if (followups.length) attention.push({ href: '/FollowUpManagement', mark: 'is-alert', title: `${followups.length} open follow-up${followups.length === 1 ? '' : 's'}`, meta: 'Due or in progress' });
+    if (upcoming.length) attention.push({ href: '/ProgramManagement', mark: 'is-info', title: `${upcoming.length} upcoming program${upcoming.length === 1 ? '' : 's'}`, meta: upcoming[0] ? upcoming[0].title : '' });
+    const attentionEl = $('#attentionList');
+    if (attentionEl) {
+      attentionEl.innerHTML = attention.length ? attention.map((item) => `
+        <li><a class="attention-item" href="${item.href}">
+          <span class="attention-item__mark ${item.mark}" aria-hidden="true"></span>
+          <span class="attention-item__body"><strong>${esc(item.title)}</strong><small>${esc(item.meta)}</small></span>
+        </a></li>`).join('') : `<li class="dash-empty"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><strong>Nothing urgent</strong><span>Queues look clear for now.</span></li>`;
+    }
+
+    const events = $('#upcomingEvents');
+    if (events) {
+      events.innerHTML = upcoming.length ? upcoming.slice(0, 5).map((p) => {
+        const d = parseDate(p.date);
+        return `
+          <li>
+            <a class="event-item" href="/ProgramManagement?open=${encodeURIComponent(p.id)}">
+              <span class="event-item__date"><small>${d.toLocaleDateString('en-PH', { month: 'short' })}</small><strong>${d.getDate()}</strong></span>
+              <span class="event-item__body">
+                <strong>${esc(p.title)}</strong>
+                <small><i class="fa-regular fa-clock" aria-hidden="true"></i> ${esc(fmtTime(p.time))} · ${esc(p.venue)}</small>
+              </span>
+              ${badge(p.type, 'info', 'style="margin-left:auto"')}
+            </a>
+          </li>`;
+      }).join('') : `<li class="dash-empty"><i class="fa-solid fa-calendar" aria-hidden="true"></i><strong>No upcoming programs</strong><span>Schedule one from Programs &amp; Events.</span></li>`;
+    }
+
+    const activity = DB.all('logs').filter((l) => l.action !== 'Failed Login').slice(0, 6);
+    renderActivityList('#recentActivity', activity, 'No activity yet', 'Actions will appear here.');
+  };
+
+  /* Administrator Dashboard ----------------------------------------------- */
+  Pages['admin-dashboard'] = async function () {
+    const session = Session.get();
+    greetDashboard(session);
+
+    const logs = DB.all('logs') || [];
+    const weekAgo = Date.now() - 7 * 86400000;
+    const dayAgo = Date.now() - 86400000;
+    const logins = logs.filter((l) => l.action === 'Login' && new Date(l.ts).getTime() > weekAgo);
+    const failed = logs.filter((l) => l.action === 'Failed Login' && new Date(l.ts).getTime() > weekAgo);
+    const recentLogins = logs.filter((l) => l.action === 'Login' && new Date(l.ts).getTime() > dayAgo);
+
+    $('#statLogins').textContent = fmtNumber(recentLogins.length);
+    $('#statLoginsMeta').textContent = `${fmtNumber(logins.length)} successful in 7 days`;
+    $('#failedLoginStatus').textContent = fmtNumber(failed.length);
+    const secDot = $('#securityStatusDot');
+    if (secDot) secDot.className = `status-pill__dot ${failed.length ? 'is-warn' : ''}`;
+
+    const seniors = DB.all('seniors') || [];
+    const assistance = DB.all('assistance') || [];
+    const programs = DB.all('programs') || [];
+    const docs = DB.all('documents') || [];
+    $('#statRecords').textContent = fmtNumber(seniors.length + assistance.length + programs.length);
+    $('#statRecordsMeta').textContent = `${fmtNumber(seniors.length)} seniors · ${fmtNumber(assistance.length)} assistance · ${fmtNumber(programs.length)} programs`;
+
+    const overview = $('#recordsOverviewBody');
+    if (overview) {
+      const rows = [
+        ['Senior citizens', seniors.length, '/OfficeRecords'],
+        ['Assistance requests', assistance.length, '/OfficeRecords'],
+        ['Programs & events', programs.length, '/OfficeRecords'],
+        ['Documents tracked', docs.length, '/OfficeRecords'],
+        ['Audit log entries', logs.length, '/AuditTrail']
+      ];
+      overview.innerHTML = rows.map(([label, count, href]) => `
+        <tr>
+          <td><a class="link" href="${href}">${esc(label)}</a></td>
+          <td class="text-right mono"><strong>${fmtNumber(count)}</strong></td>
+        </tr>`).join('');
+    }
+
+    const backups = DB.all('backups') || [];
+    const latestBackup = backups[0];
+    $('#backupStatusValue').textContent = latestBackup
+      ? `${latestBackup.type || 'Backup'} · ${relTime(latestBackup.ts)}`
+      : 'No backups recorded yet';
+
+    try {
+      const res = await fetch('/api/db/status', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+      const info = await res.json();
+      const ok = res.ok && info.ok;
+      $('#dbStatusValue').textContent = ok
+        ? `${info.usingPostgres ? 'PostgreSQL' : info.engine || 'Database'} connected`
+        : 'Status unavailable';
+      const dot = $('#dbStatusDot');
+      if (dot) dot.className = `status-pill__dot ${ok ? '' : 'is-alert'}`;
+    } catch (_) {
+      $('#dbStatusValue').textContent = 'Could not reach status API';
+      const dot = $('#dbStatusDot');
+      if (dot) dot.className = 'status-pill__dot is-alert';
+    }
+
+    let staff = [];
+    try {
+      const res = await fetch('/api/staff', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+      const body = await res.json();
+      if (res.ok && body.ok) staff = body.staff || [];
+    } catch (_) { /* permission or network */ }
+
+    const activeStaff = staff.filter((s) => s.status === 'Active');
+    const inactiveStaff = staff.filter((s) => s.status !== 'Active');
+    $('#statStaffTotal').textContent = staff.length ? fmtNumber(staff.length) : '—';
+    $('#statStaffMeta').textContent = staff.length
+      ? `${fmtNumber(activeStaff.length)} active · ${fmtNumber(inactiveStaff.length)} inactive`
+      : 'Unable to load staff list';
+    $('#statStaffActive').textContent = staff.length ? fmtNumber(activeStaff.length) : '—';
+    $('#statStaffActiveMeta').textContent = inactiveStaff.length
+      ? `${fmtNumber(inactiveStaff.length)} inactive / disabled`
+      : 'All listed accounts active';
+
+    const attention = [];
+    if (failed.length) attention.push({ href: '/SecurityMonitoring', mark: 'is-alert', title: `${failed.length} failed login attempt${failed.length === 1 ? '' : 's'} (7 days)`, meta: 'Review security monitoring' });
+    if (inactiveStaff.length) attention.push({ href: '/StaffAccounts', mark: 'is-warn', title: `${inactiveStaff.length} inactive staff account${inactiveStaff.length === 1 ? '' : 's'}`, meta: 'Confirm intentional disablement' });
+    if (!latestBackup) attention.push({ href: '/DatabaseBackup', mark: 'is-warn', title: 'No backup recorded', meta: 'Create a database backup when ready' });
+    else attention.push({ href: '/DatabaseBackup', mark: 'is-ok', title: 'Backup history available', meta: `${latestBackup.type || 'Backup'} · ${relTime(latestBackup.ts)}` });
+    const securityEl = $('#securityAttention');
+    if (securityEl) {
+      securityEl.innerHTML = attention.map((item) => `
+        <li><a class="attention-item" href="${item.href}">
+          <span class="attention-item__mark ${item.mark}" aria-hidden="true"></span>
+          <span class="attention-item__body"><strong>${esc(item.title)}</strong><small>${esc(item.meta)}</small></span>
+        </a></li>`).join('');
+    }
+
+    const adminLogs = logs.filter((l) => !['Access'].includes(l.action)).slice(0, 8);
+    renderActivityList('#adminActivity', adminLogs, 'No administrative activity', 'Audit events will appear here.');
   };
 
   /* Senior registry ------------------------------------------------------- */
@@ -3895,7 +4103,7 @@
         renderTopbar();
         applyPermissions();
         if (!can('staff.manage')) {
-          location.replace('/Dashboard');
+          location.replace(Session.get()?.home || '/Dashboard');
           return;
         }
       }

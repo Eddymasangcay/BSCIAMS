@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#183153">
+  <meta name="theme-color" content="#24476B">
   <script>try{var __t=localStorage.getItem('bscims_theme');if(__t)document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
-  <title>Dashboard | BSCIAMS</title>
+  <title>Staff Dashboard | BSCIAMS</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler.min.css">
   <link rel="stylesheet" href="/css/tabler-theme.css">
   <link rel="stylesheet" href="/css/Global.css">
   <link rel="stylesheet" href="/css/Dashboard.css">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/js/tabler.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/js/tabler.min.js" defer></script>
   <script src="/js/global.js" defer></script>
   <script src="/js/dashboard-charts.js" defer></script>
 </head>
@@ -34,36 +34,28 @@
       <main class="content" id="main" tabindex="-1">
         <div class="page-header">
           <div>
+            <span class="role-chip"><i class="fa-solid fa-building-columns" aria-hidden="true"></i> Barangay operations</span>
             <p class="eyebrow" id="todayDate"></p>
             <h1 class="page-title" id="greeting">Dashboard</h1>
-            <p class="page-subtitle">Here's an overview of senior citizen services in the barangay.</p>
+            <p class="page-subtitle">Track registrations, assistance queues, documents, and programs that need attention today.</p>
           </div>
           <div class="page-actions">
-            <a class="btn btn--secondary" href="/ReportsAnalytics"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i>View reports</a>
+            <a class="btn btn--secondary" href="/ReportsAnalytics" data-perm="report.view" data-perm-hide><i class="fa-solid fa-chart-pie" aria-hidden="true"></i>View reports</a>
             <a class="btn btn--primary" href="/SeniorRegistry?action=new" data-perm="senior.create" data-perm-hide><i class="fa-solid fa-user-plus" aria-hidden="true"></i>Register senior</a>
           </div>
         </div>
 
         <section class="stat-grid" aria-label="Key figures">
-          <a class="card card--hover stat-card" href="/SeniorRegistry">
+          <a class="stat-card" href="/SeniorRegistry">
             <div class="stat-card__head">
-              <span class="stat-card__label">Active seniors</span>
-              <span class="stat-card__icon tone-violet"><i class="fa-solid fa-users" aria-hidden="true"></i></span>
+              <span class="stat-card__label">Registered seniors</span>
+              <span class="stat-card__icon tone-info"><i class="fa-solid fa-users" aria-hidden="true"></i></span>
             </div>
             <strong class="stat-card__value" id="statTotal">—</strong>
             <p class="stat-card__meta" id="statTotalMeta"></p>
           </a>
 
-          <a class="card card--hover stat-card" href="/ReportsAnalytics">
-            <div class="stat-card__head">
-              <span class="stat-card__label">Pension recipients</span>
-              <span class="stat-card__icon tone-approved"><i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i></span>
-            </div>
-            <strong class="stat-card__value" id="statPension">—</strong>
-            <p class="stat-card__meta" id="statPensionMeta"></p>
-          </a>
-
-          <a class="card card--hover stat-card" href="/AssistanceManagement">
+          <a class="stat-card" href="/AssistanceManagement">
             <div class="stat-card__head">
               <span class="stat-card__label">Pending assistance</span>
               <span class="stat-card__icon tone-pending"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i></span>
@@ -72,24 +64,60 @@
             <p class="stat-card__meta" id="statPendingMeta"></p>
           </a>
 
-          <a class="card card--hover stat-card" href="/ProgramManagement">
+          <a class="stat-card" href="/DocumentVerification">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Documents to verify</span>
+              <span class="stat-card__icon tone-pending"><i class="fa-solid fa-file-circle-check" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statDocs">—</strong>
+            <p class="stat-card__meta" id="statDocsMeta"></p>
+          </a>
+
+          <a class="stat-card" href="/ProgramManagement">
             <div class="stat-card__head">
               <span class="stat-card__label">Upcoming programs</span>
-              <span class="stat-card__icon tone-info"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i></span>
+              <span class="stat-card__icon tone-approved"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i></span>
             </div>
             <strong class="stat-card__value" id="statPrograms">—</strong>
             <p class="stat-card__meta" id="statProgramsMeta"></p>
           </a>
         </section>
 
-        <section class="dash-grid" aria-label="Analytics">
+        <section class="stat-grid stat-grid--3" aria-label="Assistance and follow-up">
+          <a class="stat-card" href="/AssistanceManagement">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Approved assistance</span>
+              <span class="stat-card__icon tone-approved"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statApproved">—</strong>
+            <p class="stat-card__meta" id="statApprovedMeta"></p>
+          </a>
+          <a class="stat-card" href="/AssistanceManagement">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Released assistance</span>
+              <span class="stat-card__icon tone-info"><i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statReleased">—</strong>
+            <p class="stat-card__meta" id="statReleasedMeta"></p>
+          </a>
+          <a class="stat-card" href="/FollowUpManagement">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Open follow-ups</span>
+              <span class="stat-card__icon tone-alert"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statFollowups">—</strong>
+            <p class="stat-card__meta" id="statFollowupsMeta"></p>
+          </a>
+        </section>
+
+        <section class="dash-grid" aria-label="Operations analytics">
           <article class="card dash-grid__wide">
             <header class="card__header card__header--plain">
               <div>
                 <h2 class="card__title">Monthly registrations</h2>
                 <p class="card__subtitle">New senior citizens registered over the last 12 months</p>
               </div>
-              <span class="badge badge--violet badge--plain" id="regTotalBadge"></span>
+              <span class="badge badge--info badge--plain" id="regTotalBadge"></span>
             </header>
             <div class="card__body">
               <div class="chart-box">
@@ -112,6 +140,16 @@
             </div>
           </article>
 
+          <article class="card dash-list-card">
+            <header class="card__header">
+              <div>
+                <h2 class="card__title">Needs attention</h2>
+                <p class="card__subtitle">Queues that may require action</p>
+              </div>
+            </header>
+            <ul class="attention-list" id="attentionList" style="padding:8px 12px 12px"></ul>
+          </article>
+
           <article class="card">
             <header class="card__header card__header--plain">
               <div>
@@ -129,8 +167,8 @@
           <article class="card dash-list-card">
             <header class="card__header">
               <div>
-                <h2 class="card__title">Upcoming events</h2>
-                <p class="card__subtitle">Programs scheduled next</p>
+                <h2 class="card__title">Upcoming programs</h2>
+                <p class="card__subtitle">Next scheduled events</p>
               </div>
               <a class="link small" href="/ProgramManagement">View all</a>
             </header>
@@ -141,11 +179,32 @@
             <header class="card__header">
               <div>
                 <h2 class="card__title">Recent activity</h2>
-                <p class="card__subtitle">Latest actions across the system</p>
+                <p class="card__subtitle">Latest office actions</p>
               </div>
-              <a class="link small" href="/AuditTrail">Audit trail</a>
+              <a class="link small" href="/AuditTrail" data-perm="audit.view" data-perm-hide>Audit trail</a>
             </header>
             <ul class="activity-list" id="recentActivity"></ul>
+          </article>
+
+          <article class="card dash-grid__full">
+            <header class="card__header card__header--plain">
+              <div>
+                <h2 class="card__title">Quick actions</h2>
+                <p class="card__subtitle">Frequently used barangay functions</p>
+              </div>
+            </header>
+            <div class="card__body">
+              <div class="quick-actions">
+                <a class="quick-action" href="/SeniorRegistry?action=new" data-perm="senior.create" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-user-plus" aria-hidden="true"></i></span><span class="quick-action__label">Register senior citizen</span></a>
+                <a class="quick-action" href="/SeniorRegistry"><span class="quick-action__icon"><i class="fa-solid fa-address-book" aria-hidden="true"></i></span><span class="quick-action__label">View senior registry</span></a>
+                <a class="quick-action" href="/AssistanceManagement" data-perm="assistance.view" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-hand-holding-medical" aria-hidden="true"></i></span><span class="quick-action__label">Process assistance</span></a>
+                <a class="quick-action" href="/DocumentVerification" data-perm="document.view" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-file-circle-check" aria-hidden="true"></i></span><span class="quick-action__label">Verify documents</span></a>
+                <a class="quick-action" href="/ProgramManagement" data-perm="program.view" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i></span><span class="quick-action__label">Manage programs</span></a>
+                <a class="quick-action" href="/BeneficiaryManagement" data-perm="beneficiary.manage" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-people-group" aria-hidden="true"></i></span><span class="quick-action__label">View beneficiaries</span></a>
+                <a class="quick-action" href="/FollowUpManagement" data-perm="followup.view" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i></span><span class="quick-action__label">Manage follow-ups</span></a>
+                <a class="quick-action" href="/ReportsAnalytics" data-perm="report.view" data-perm-hide><span class="quick-action__icon"><i class="fa-solid fa-file-export" aria-hidden="true"></i></span><span class="quick-action__label">Generate reports</span></a>
+              </div>
+            </div>
           </article>
         </section>
       </main>
@@ -153,4 +212,3 @@
   </div>
 </body>
 </html>
-

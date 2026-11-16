@@ -5,8 +5,8 @@
 /* Layout ----------------------------------------------------------------- */
 .backup-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 12px;
   align-items: start;
 }
 
@@ -18,7 +18,7 @@
   align-items: center;
   gap: 16px;
   padding: 16px;
-  border: 1px solid var(--border-light);
+  border: var(--border);
   border-radius: var(--radius-md);
   background: var(--surface-muted);
 }
@@ -42,7 +42,7 @@
 .progress {
   height: 8px;
   border-radius: var(--radius-pill);
-  background: #EEEAF2;
+  background: var(--border-muted, #EEEAF2);
   overflow: hidden;
 }
 .progress--thin { height: 6px; }
@@ -66,7 +66,7 @@
   align-items: center;
   gap: 6px;
   padding: 28px 20px;
-  border: 1.5px dashed #CFC7D8;
+  border: var(--border-dashed, 1px dashed var(--border-strong, #CBD5E1));
   border-radius: var(--radius-md);
   background: var(--surface-muted);
   text-align: center;
@@ -75,12 +75,12 @@
 }
 .drop-zone:hover,
 .drop-zone.is-dragover {
-  border-color: var(--primary-toxic-violet);
+  border-color: var(--border-focus, var(--primary-toxic-violet));
   background: var(--primary-soft);
 }
-.drop-zone:focus-within { outline: 2px solid var(--primary-toxic-violet); outline-offset: 2px; }
+.drop-zone:focus-within { outline: 2px solid var(--border-focus, var(--primary-toxic-violet)); outline-offset: 2px; }
 .drop-zone:has(input:disabled) { cursor: not-allowed; opacity: 0.6; }
-.drop-zone:has(input:disabled):hover { border-color: #CFC7D8; background: var(--surface-muted); }
+.drop-zone:has(input:disabled):hover { border-color: var(--border-strong, #CBD5E1); background: var(--surface-muted); }
 
 .drop-zone__icon {
   display: grid;

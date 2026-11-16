@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#24476B">
+  <script>try{var __t=localStorage.getItem('bscims_theme');if(__t)document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+  <title>Administrator Dashboard | BSCIAMS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler.min.css">
+  <link rel="stylesheet" href="/css/tabler-theme.css">
+  <link rel="stylesheet" href="/css/Global.css">
+  <link rel="stylesheet" href="/css/Dashboard.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/js/tabler.min.js" defer></script>
+  <script src="/js/global.js" defer></script>
+  <script src="/js/dashboard-charts.js" defer></script>
+</head>
+<body data-page="admin-dashboard">
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="content" id="main" tabindex="-1">
+        <div class="page-header">
+          <div>
+            <span class="role-chip role-chip--admin"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Administrator</span>
+            <p class="eyebrow" id="todayDate"></p>
+            <h1 class="page-title" id="greeting">System overview</h1>
+            <p class="page-subtitle">Monitor accounts, security activity, backups, and office-wide records. Operational edits remain with authorized barangay staff.</p>
+          </div>
+          <div class="page-actions">
+            <a class="btn btn--secondary" href="/AuditTrail" data-perm="audit.view" data-perm-hide><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>Audit trail</a>
+            <a class="btn btn--primary" href="/StaffAccounts" data-perm="staff.manage" data-perm-hide><i class="fa-solid fa-user-shield" aria-hidden="true"></i>Manage staff</a>
+          </div>
+        </div>
+
+        <section class="status-strip" aria-label="System status">
+          <div class="status-pill">
+            <span class="status-pill__dot" id="dbStatusDot"></span>
+            <div>
+              <p class="status-pill__label">Database</p>
+              <p class="status-pill__value" id="dbStatusValue">Checking…</p>
+            </div>
+          </div>
+          <div class="status-pill">
+            <span class="status-pill__dot is-info"></span>
+            <div>
+              <p class="status-pill__label">Latest backup</p>
+              <p class="status-pill__value" id="backupStatusValue">—</p>
+            </div>
+          </div>
+          <div class="status-pill">
+            <span class="status-pill__dot is-warn" id="securityStatusDot"></span>
+            <div>
+              <p class="status-pill__label">Failed logins (7 days)</p>
+              <p class="status-pill__value" id="failedLoginStatus">—</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="stat-grid" aria-label="Administration summary">
+          <a class="stat-card" href="/StaffAccounts">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Staff accounts</span>
+              <span class="stat-card__icon tone-info"><i class="fa-solid fa-users-gear" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statStaffTotal">—</strong>
+            <p class="stat-card__meta" id="statStaffMeta"></p>
+          </a>
+          <a class="stat-card" href="/StaffAccounts">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Active accounts</span>
+              <span class="stat-card__icon tone-approved"><i class="fa-solid fa-user-check" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statStaffActive">—</strong>
+            <p class="stat-card__meta" id="statStaffActiveMeta"></p>
+          </a>
+          <a class="stat-card" href="/SecurityMonitoring">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Recent logins</span>
+              <span class="stat-card__icon tone-info"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statLogins">—</strong>
+            <p class="stat-card__meta" id="statLoginsMeta"></p>
+          </a>
+          <a class="stat-card" href="/OfficeRecords">
+            <div class="stat-card__head">
+              <span class="stat-card__label">Office records</span>
+              <span class="stat-card__icon tone-violet"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></span>
+            </div>
+            <strong class="stat-card__value" id="statRecords">—</strong>
+            <p class="stat-card__meta" id="statRecordsMeta"></p>
+          </a>
+        </section>
+
+        <section class="dash-grid" aria-label="Administration analytics">
+          <article class="card dash-grid__wide">
+            <header class="card__header card__header--plain">
+              <div>
+                <h2 class="card__title">Login activity</h2>
+                <p class="card__subtitle">Successful and failed sign-ins over the last 14 days</p>
+              </div>
+            </header>
+            <div class="card__body">
+              <div class="chart-box">
+                <canvas id="loginActivityChart" role="img" aria-label="Bar chart of login activity"></canvas>
+              </div>
+            </div>
+          </article>
+
+          <article class="card dash-list-card">
+            <header class="card__header">
+              <div>
+                <h2 class="card__title">Security attention</h2>
+                <p class="card__subtitle">Items that may need review</p>
+              </div>
+              <a class="link small" href="/SecurityMonitoring">Security</a>
+            </header>
+            <ul class="attention-list" id="securityAttention" style="padding:8px 12px 12px"></ul>
+          </article>
+
+          <article class="card dash-list-card">
+            <header class="card__header">
+              <div>
+                <h2 class="card__title">Recent administrative activity</h2>
+                <p class="card__subtitle">Audit events across the system</p>
+              </div>
+              <a class="link small" href="/AuditTrail">Full trail</a>
+            </header>
+            <ul class="activity-list" id="adminActivity"></ul>
+          </article>
+
+          <article class="card dash-list-card">
+            <header class="card__header">
+              <div>
+                <h2 class="card__title">Records overview</h2>
+                <p class="card__subtitle">Counts visible for oversight</p>
+              </div>
+              <a class="link small" href="/OfficeRecords">Details</a>
+            </header>
+            <div class="card__body" style="padding-top:0">
+              <table class="dash-table" aria-label="Office record counts">
+                <tbody id="recordsOverviewBody"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="card dash-grid__full">
+            <header class="card__header card__header--plain">
+              <div>
+                <h2 class="card__title">Quick actions</h2>
+                <p class="card__subtitle">Common administration tasks</p>
+              </div>
+            </header>
+            <div class="card__body">
+              <div class="quick-actions" id="adminQuickActions">
+                <a class="quick-action" href="/StaffAccounts"><span class="quick-action__icon"><i class="fa-solid fa-user-shield" aria-hidden="true"></i></span><span class="quick-action__label">Manage staff accounts</span></a>
+                <a class="quick-action" href="/AuditTrail"><span class="quick-action__icon"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span><span class="quick-action__label">Review audit trail</span></a>
+                <a class="quick-action" href="/RolePermissions"><span class="quick-action__icon"><i class="fa-solid fa-key" aria-hidden="true"></i></span><span class="quick-action__label">Roles &amp; permissions</span></a>
+                <a class="quick-action" href="/SecurityMonitoring"><span class="quick-action__icon"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span><span class="quick-action__label">View security activity</span></a>
+                <a class="quick-action" href="/DatabaseBackup"><span class="quick-action__icon"><i class="fa-solid fa-database" aria-hidden="true"></i></span><span class="quick-action__label">Create database backup</span></a>
+                <a class="quick-action" href="/DatabaseBackup#settings"><span class="quick-action__icon"><i class="fa-solid fa-gear" aria-hidden="true"></i></span><span class="quick-action__label">System settings</span></a>
+                <a class="quick-action" href="/ReportsAnalytics"><span class="quick-action__icon"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i></span><span class="quick-action__label">Reports overview</span></a>
+                <a class="quick-action" href="/OfficeRecords"><span class="quick-action__icon"><i class="fa-solid fa-folder-tree" aria-hidden="true"></i></span><span class="quick-action__label">Office records</span></a>
+              </div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

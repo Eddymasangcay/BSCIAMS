@@ -4,14 +4,15 @@
 
 /* Header filters --------------------------------------------------------- */
 .assist-filters {
-  display: flex;
+  display: flex !important;
+  flex-direction: row !important;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px 10px;
 }
-.assist-filters .input-icon { width: 240px; }
-.assist-filters .select { width: 160px; }
-.assist-filters .history-select { width: 300px; }
+.assist-filters .input-icon { width: 220px; max-width: 100%; }
+.assist-filters .select { width: 150px; max-width: 100%; min-height: 36px; height: 36px; }
+.assist-filters .history-select { width: 280px; max-width: 100%; }
 
 /* Table ------------------------------------------------------------------ */
 .assist-table td { font-size: 13.5px; }
@@ -40,7 +41,7 @@
   align-items: flex-start;
   gap: 12px;
   padding: 12px 14px;
-  border: 1px solid var(--border-light);
+  border: var(--border);
   border-radius: var(--radius-md);
   background: var(--surface-muted);
 }
@@ -135,11 +136,11 @@
 .history-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: var(--border);
 }
 .history-summary:empty { display: none; }
 .history-summary__item { padding: 16px 22px; }
-.history-summary__item + .history-summary__item { border-left: 1px solid var(--border-light); }
+.history-summary__item + .history-summary__item { border-left: var(--border); }
 .history-summary__item span { display: block; font-size: 12px; color: var(--text-muted); }
 .history-summary__item strong { display: block; margin-top: 2px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
@@ -155,6 +156,6 @@
   .history-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .history-summary__item { padding: 12px 16px; }
   .history-summary__item:nth-child(3) { border-left: 0; }
-  .history-summary__item:nth-child(n + 3) { border-top: 1px solid var(--border-light); }
+  .history-summary__item:nth-child(n + 3) { border-top: var(--border); }
   .status-tracker__label { font-size: 11.5px; }
 }

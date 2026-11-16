@@ -116,6 +116,7 @@ DEFAULT_ROLE_PERMISSIONS = {
 # Office HTML pages -> required permission (any one grants access).
 PAGE_PERMISSIONS = {
     "Dashboard": ["senior.view", "health.view", "records.overview", "report.view"],
+    "AdminDashboard": ["staff.manage", "audit.view", "records.overview", "security.view"],
     "ReportsAnalytics": ["report.view"],
     "SeniorRegistry": ["senior.view"],
     "PrintSeniorId": ["senior.view"],

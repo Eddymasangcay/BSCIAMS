@@ -5,6 +5,7 @@ in PostgreSQL (required centralized database via DATABASE_URL).
 """
 
 import os
+import sys
 from datetime import timedelta
 
 from urllib.parse import urlparse
@@ -12,18 +13,35 @@ from urllib.parse import urlparse
 from flask import Flask, jsonify, redirect, request, send_from_directory, session
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+RESOURCES_DIR = os.path.join(BASE_DIR, "project_resources")
+if RESOURCES_DIR not in sys.path:
+    sys.path.insert(0, RESOURCES_DIR)
+
 import database
 import db_enhance
 import permissions
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 HTML_DIR = os.path.join(BASE_DIR, "html")
 CSS_DIR = os.path.join(BASE_DIR, "css")
 JS_DIR = os.path.join(BASE_DIR, "js")
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "bscims-local-class-server"
+
+_flask_secret = os.environ.get("FLASK_SECRET_KEY")
+_is_production = (
+    os.environ.get("RENDER") == "true"
+    or os.environ.get("FLASK_ENV") == "production"
+    or os.environ.get("ENV") == "production"
+)
+if _is_production and not _flask_secret:
+    raise RuntimeError(
+        "FLASK_SECRET_KEY must be set in production. "
+        "Configure a long random secret via environment variable."
+    )
+app.secret_key = _flask_secret or "bscims-local-dev-only-not-for-production"
+
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
@@ -115,7 +133,7 @@ def _workspace_home(role):
     if role == "Health Worker":
         return "/HealthDashboard"
     if role == "Administrator":
-        return "/Dashboard"
+        return "/AdminDashboard"
     return "/Dashboard"
 
 

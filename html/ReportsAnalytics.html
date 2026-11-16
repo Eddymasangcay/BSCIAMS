@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#183153">
+  <meta name="theme-color" content="#24476B">
   <script>try{var __t=localStorage.getItem('bscims_theme');if(__t)document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
   <title>Reports &amp; Analytics | BSCIAMS</title>
 
@@ -49,25 +49,29 @@
         </div>
 
         <form class="card report-filters no-print" id="reportFilters" aria-label="Report filters">
-          <div class="field">
-            <label class="label" for="rpFrom">Assistance period from</label>
-            <input class="input" type="date" id="rpFrom" name="from">
+          <div class="report-filters__dates">
+            <div class="field">
+              <label class="label" for="rpFrom">Assistance period from</label>
+              <input class="input" type="date" id="rpFrom" name="from">
+            </div>
+            <div class="field">
+              <label class="label" for="rpTo">To</label>
+              <input class="input" type="date" id="rpTo" name="to">
+            </div>
+            <div class="field">
+              <label class="label" for="rpPurok">Purok</label>
+              <select class="select" id="rpPurok" name="purok" data-options="puroks"><option value="">All puroks</option></select>
+            </div>
           </div>
-          <div class="field">
-            <label class="label" for="rpTo">To</label>
-            <input class="input" type="date" id="rpTo" name="to">
+          <div class="report-filters__controls">
+            <div class="report-filters__presets" role="group" aria-label="Quick date ranges">
+              <button type="button" class="chip" data-range="3">3M</button>
+              <button type="button" class="chip" data-range="6">6M</button>
+              <button type="button" class="chip is-active" data-range="12">12M</button>
+              <button type="button" class="chip" data-range="ytd">YTD</button>
+            </div>
+            <button type="button" class="btn btn--ghost" id="rpReset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Reset</button>
           </div>
-          <div class="field">
-            <label class="label" for="rpPurok">Purok</label>
-            <select class="select" id="rpPurok" name="purok" data-options="puroks"><option value="">All puroks</option></select>
-          </div>
-          <div class="report-filters__presets" role="group" aria-label="Quick date ranges">
-            <button type="button" class="chip" data-range="3">3M</button>
-            <button type="button" class="chip" data-range="6">6M</button>
-            <button type="button" class="chip is-active" data-range="12">12M</button>
-            <button type="button" class="chip" data-range="ytd">YTD</button>
-          </div>
-          <button type="button" class="btn btn--ghost" id="rpReset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Reset</button>
         </form>
 
         <section class="kpi-strip" aria-label="Report highlights">

@@ -17,7 +17,9 @@ from database import (
     connect,
 )
 
-MIGRATIONS_DIR = os.path.join(os.path.dirname(__file__), "database", "migrations")
+MIGRATIONS_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "database", "migrations")
+)
 
 EXTRA_SENIOR_COLUMNS = (
     ("EmergencyContactName", "TEXT"),
