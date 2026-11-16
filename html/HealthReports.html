@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#3D007A">
+  <script>try{var __t=localStorage.getItem('bscims_theme');if(__t)document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+  <title>Health Reports | BSCIAMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="/css/Global.css">
+  <link rel="stylesheet" href="/css/WorkspaceModules.css">
+  <script src="/js/workspace-modules.js" defer></script>
+  <script src="/js/global.js" defer></script>
+</head>
+<body data-page="health-reports">
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar"></aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <main class="content" id="main" tabindex="-1">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Health Reports</h1>
+            <p class="page-subtitle">Generate summaries for assessments, vitals, home visits, referrals, and health program participation.</p>
+          </div>
+          <div class="page-actions" id="pageActions"></div>
+        </div>
+        <section class="grid grid--4 mb-4" id="summaryStats" aria-label="Summary"></section>
+        <section class="card">
+          <header class="card__header">
+            <div>
+              <h2 class="card__title" id="listHeading">Records</h2>
+              <p class="card__subtitle" id="listSubtitle">Manage workspace records</p>
+            </div>
+            <div class="assist-filters">
+              <div class="input-icon">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <label for="moduleSearch" class="sr-only">Search</label>
+                <input class="input input--sm" type="search" id="moduleSearch" placeholder="Search…">
+              </div>
+              <label for="moduleFilter" class="sr-only">Filter</label>
+              <select class="select select--sm" id="moduleFilter"><option value="">All</option></select>
+            </div>
+          </header>
+          <div class="table-wrap">
+            <table class="table" id="moduleTable">
+              <thead id="moduleHead"></thead>
+              <tbody id="moduleBody"></tbody>
+            </table>
+          </div>
+        </section>
+        <div id="moduleModals"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

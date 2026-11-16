@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#3D007A">
+  <title>Print Senior Citizen ID | BSCIAMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="/css/PrintSeniorId.css">
+</head>
+<body>
+  <div class="print-toolbar">
+    <div class="print-toolbar__actions">
+      <button type="button" id="backBtn">Back</button>
+      <button type="button" id="printBtn">Print ID</button>
+    </div>
+    <p>This page prints only the ID card at CR80 size (85.6 × 54 mm). Use Letter or ID-card paper — the card stays actual size.</p>
+  </div>
+  <main id="sheets"></main>
+  <p class="print-empty" id="empty" hidden>
+    No ID is ready to print. <a href="/SeniorRegistry">Return to Senior Registry</a>
+  </p>
+  <script>
+    (function () {
+      const KEY = 'bscims.idPrint';
+      const sheets = document.getElementById('sheets');
+      const empty = document.getElementById('empty');
+      const markup = sessionStorage.getItem(KEY) || '';
+
+      document.getElementById('backBtn').onclick = function () {
+        if (history.length > 1) history.back();
+        else location.href = '/SeniorRegistry';
+      };
+      document.getElementById('printBtn').onclick = function () { window.print(); };
+
+      if (!markup) {
+        empty.hidden = false;
+        document.getElementById('printBtn').disabled = true;
+        return;
+      }
+
+      sheets.innerHTML = markup;
+      const images = Array.prototype.slice.call(document.images);
+      Promise.all(images.map(function (img) {
+        return img.complete ? Promise.resolve() : new Promise(function (resolve) {
+          img.onload = img.onerror = resolve;
+        });
+      })).then(function () {
+        const mobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!mobile) window.print();
+      });
+    }());
+  </script>
+</body>
+</html>

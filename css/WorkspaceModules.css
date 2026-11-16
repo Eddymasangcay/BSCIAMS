@@ -1,0 +1,49 @@
+/* Shared styles for experimental role-workspace modules */
+
+.ws-note {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--brand, #3d007a);
+  background: color-mix(in srgb, var(--brand, #3d007a) 8%, transparent);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--text-muted, #5c5670);
+  font-size: 0.92rem;
+}
+
+.ws-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.perm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem 1rem;
+}
+
+.perm-grid label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  font-size: 0.9rem;
+}
+
+.role-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.health-disclaimer {
+  font-size: 0.85rem;
+  color: var(--text-muted, #5c5670);
+}
+
+@media (max-width: 720px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
